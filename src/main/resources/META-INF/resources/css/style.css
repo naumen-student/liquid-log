@@ -1,0 +1,33 @@
+table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-fixed thead {
+          width: 100%;
+          overflow-x:scroll;
+        }
+        .table-fixed tbody {
+          max-height: 700px;
+          overflow-y: auto;
+          width: 100%;
+        }
+        .table-fixed thead, .table-fixed tbody, .table-fixed tr, .table-fixed td, .table-fixed th {
+          display: inline;
+        }
+        .table-fixed tbody td, .table-fixed thead > tr> th {
+          float: left;
+          border-bottom-width: 0;
+        }
+		.header-fixed thead tr {
+        	display: block;
+        	position: relative;
+        }
+        .header-fixed tbody {
+        	display: block;
+        	overflow: auto;
+        	height: 800px;
+        }       	
+        .container {
+        	width: 85%;
+        }
