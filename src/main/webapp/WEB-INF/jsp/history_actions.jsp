@@ -32,6 +32,7 @@
     Number form[] = (Number[])request.getAttribute(Constants.PerformedActions.GET_FORM_ACTIONS);
     Number dtos[] = (Number[])request.getAttribute(Constants.PerformedActions.GET_DT_OBJECT_ACTIONS);
     Number search[] = (Number[])request.getAttribute(Constants.PerformedActions.SEARCH_ACTIONS);
+    Number getCatalog[] = (Number[])request.getAttribute(Constants.PerformedActions.GET_CATALOG_ACTIONS);
     Number actionsSumm[] = (Number[])request.getAttribute(Constants.PerformedActions.ACTIONS_COUNT);
     
     
@@ -96,7 +97,7 @@
 <div class="scroll-container">
 	<table class="table table-fixed header-fixed">
         <thead class="thead-inverse">
-            <th class="col-xs-4">Time</th>
+            <th class="col-xs-3">Time</th>
             <th class="col-xs-1">Summ</th>
             <th class="col-xs-1">Addobject</th>
             <th class="col-xs-1">EditObject</th>
@@ -105,11 +106,12 @@
             <th class="col-xs-1">GetForm</th>
             <th class="col-xs-1">GetDtObject</th>
             <th class="col-xs-1">Search</th>
+            <th class="col-xs-1">GetCatalog</th>
         </thead>
         <tbody >
             <% for(int i=0;i<times.length;i++) {%>
                 <tr class="row">
-                    <td class="col-xs-4" style="text-align:center;">
+                    <td class="col-xs-3" style="text-align:center;">
                        <%= new java.util.Date(times[i].longValue()).toString() %>
                     </td>
                     <td class="col-xs-1">
@@ -136,6 +138,9 @@
                     <td class="col-xs-1">
                         <%= search[i].intValue() %>
                     </td>
+                    <td class="col-xs-1">
+                        <%= getCatalog[i].intValue() %>
+                    </td>
                 </tr>
             <% } %>
         </tbody>
@@ -152,6 +157,7 @@ var comment = [];
 var form = [];
 var dtos = [];
 var search = [];
+var catalog = [];
 var summ = [];
 
 <% for(int i=0;i<times.length;i++) {%>
@@ -163,6 +169,7 @@ var summ = [];
     form.push([new Date(<%= times[i] %>), <%= form[i].intValue() %>]);
     dtos.push([new Date(<%= times[i] %>), <%= dtos[i].intValue() %>]);
     search.push([new Date(<%= times[i] %>), <%= search[i].intValue() %>]);
+    catalog.push([new Date(<%= times[i] %>), <%= getCatalog[i].intValue() %>]);
     summ.push([new Date(<%= times[i] %>), <%= actionsSumm[i].intValue() %>]);
 
 <% } %>
@@ -193,6 +200,9 @@ if(localStorage.getItem('searchActions')==null){
 if(localStorage.getItem('summary')==null){
     localStorage.setItem('summary', 'true');
 }
+if(localStorage.getItem('getCatalogActions')==null){
+    localStorage.setItem('getCatalogActions', 'true');
+}
 
 var addVisible = localStorage.getItem('addActions')==='true';
 var editVisible = localStorage.getItem('editActions')==='true';
@@ -201,6 +211,7 @@ var commentVisible = localStorage.getItem('commentActions')==='true';
 var	formVisible = localStorage.getItem('formActions')==='true';
 var dtosVisible = localStorage.getItem('dtObjectActions')==='true';
 var searchVisible = localStorage.getItem('searchActions')==='true';
+var catalogVisible = localStorage.getItem('getCatalogActions')==='true';
 var summVisible = localStorage.getItem('summary')==='true';
 
 Highcharts.setOptions({
@@ -282,6 +293,9 @@ var myChart = Highcharts.chart('actions-chart-container', {
                         if(event.target.index==7){
                             localStorage.setItem('summary', !series[7].visible);
                         }
+                        if(event.target.index==8){
+                            localStorage.setItem('getCatalogActions', !series[8].visible);
+                        }
                     }
                 }
             }
@@ -326,6 +340,11 @@ var myChart = Highcharts.chart('actions-chart-container', {
             name: 'Summary',
             data: summ,
             visible: summVisible,
+            turboThreshold: 10000
+        }, {
+            name: 'GetCatalog',
+            data: catalog,
+            visible: catalogVisible,
             turboThreshold: 10000
         }]
 });
