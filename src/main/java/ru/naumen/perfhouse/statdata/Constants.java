@@ -69,11 +69,12 @@ public class Constants
         public static final String GET_DT_OBJECT_ACTIONS = "getDtObjectActions";
         public static final String SEARCH_ACTIONS = "searchActions";
         public static final String ACTIONS_COUNT = "count";
+        public static final String GET_CATALOG_ACTIONS = "getCatalogActions";
 
         static List<String> getProps()
         {
             return Lists.newArrayList(TIME, ADD_ACTIONS, EDIT_ACTIONS, LIST_ACTIONS, COMMENT_ACTIONS, ACTIONS_COUNT,
-                    GET_FORM_ACTIONS, GET_DT_OBJECT_ACTIONS, SEARCH_ACTIONS);
+                    GET_FORM_ACTIONS, GET_DT_OBJECT_ACTIONS, SEARCH_ACTIONS, GET_CATALOG_ACTIONS);
         }
 
     }
