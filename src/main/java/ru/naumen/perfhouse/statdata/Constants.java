@@ -63,6 +63,7 @@ public class Constants
 
         public static final String ADD_ACTIONS = "addActions";
         public static final String EDIT_ACTIONS = "editActions";
+        public static final String GET_CATALOGS_ACTION = "getCatalogsAction";
         public static final String LIST_ACTIONS = "listActions";
         public static final String COMMENT_ACTIONS = "commentActions";
         public static final String GET_FORM_ACTIONS = "getFormActions";
@@ -72,8 +73,8 @@ public class Constants
 
         static List<String> getProps()
         {
-            return Lists.newArrayList(TIME, ADD_ACTIONS, EDIT_ACTIONS, LIST_ACTIONS, COMMENT_ACTIONS, ACTIONS_COUNT,
-                    GET_FORM_ACTIONS, GET_DT_OBJECT_ACTIONS, SEARCH_ACTIONS);
+            return Lists.newArrayList(TIME, ADD_ACTIONS, EDIT_ACTIONS, GET_CATALOGS_ACTION, LIST_ACTIONS,
+                    COMMENT_ACTIONS, ACTIONS_COUNT, GET_FORM_ACTIONS, GET_DT_OBJECT_ACTIONS, SEARCH_ACTIONS);
         }
 
     }
