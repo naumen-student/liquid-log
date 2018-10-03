@@ -6,6 +6,7 @@ import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.MAX_GC_TI
 import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.ADD_ACTIONS;
 import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.COMMENT_ACTIONS;
 import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.EDIT_ACTIONS;
+import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.GET_CATALOGS_ACTION;
 import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.GET_DT_OBJECT_ACTIONS;
 import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.GET_FORM_ACTIONS;
 import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.LIST_ACTIONS;
@@ -130,6 +131,7 @@ public class InfluxDAO
                 .addField(ERRORS, errors.getErrorCount())
                 .addField(ADD_ACTIONS, dones.getAddObjectActions())
                 .addField(EDIT_ACTIONS, dones.getEditObjectsActions())
+                .addField(GET_CATALOGS_ACTION, dones.getGetCatalogsActions())
                 .addField(LIST_ACTIONS, dones.geListActions())
                 .addField(COMMENT_ACTIONS, dones.getCommentActions())
                 .addField(GET_FORM_ACTIONS, dones.getFormActions())

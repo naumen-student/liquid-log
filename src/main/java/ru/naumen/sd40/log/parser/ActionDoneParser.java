@@ -32,15 +32,14 @@ public class ActionDoneParser
     double percent999;
     double max;
     long count;
+
     private int addObjectActions = 0;
     private int editObjectsActions = 0;
-    private int getListActions = 0;
+    private int getCatalogsAction = 0;
     private int commentActions = 0;
-
+    private int getListActions = 0;
     private int getFormActions = 0;
-
     private int getDtObjectActions = 0;
-
     private int searchActions = 0;
 
     boolean nan = true;
@@ -103,6 +102,10 @@ public class ActionDoneParser
     public int getEditObjectsActions()
     {
         return editObjectsActions;
+    }
+
+    public int getGetCatalogsActions() {
+        return getCatalogsAction;
     }
 
     public int getFormActions()
@@ -185,6 +188,10 @@ public class ActionDoneParser
             else if (actionInLowerCase.equals("editobjectaction"))
             {
                 editObjectsActions++;
+            }
+            else if (actionInLowerCase.matches("getcatalogsaction"))
+            {
+                getCatalogsAction++;
             }
             else if (actionInLowerCase.matches("(?i)[a-zA-Z]+comment[a-zA-Z]+"))
             {

@@ -31,9 +31,9 @@ public class ActionDoneParserTest {
     }
 
     @Test
-    public void mustParseEditObject() {
+    public void mustParseEditActions() {
         //given
-        ActionDoneParser parser=  new ActionDoneParser();
+        ActionDoneParser parser = new ActionDoneParser();
 
         //when
         parser.parseLine("Done(10): EditObjectAction");
@@ -43,7 +43,19 @@ public class ActionDoneParserTest {
     }
 
     @Test
-    public void mustParseSearchObject(){
+    public void mustParseGetCatalogsAction() {
+        //given
+        ActionDoneParser parser = new ActionDoneParser();
+
+        //when
+        parser.parseLine("Done(10):GetCatalogsAction");
+
+        //then
+        Assert.assertEquals(1, parser.getGetCatalogsActions());
+    }
+
+    @Test
+    public void mustParseSearchActions(){
         //given
         ActionDoneParser parser = new ActionDoneParser();
 
@@ -61,7 +73,7 @@ public class ActionDoneParserTest {
     }
 
     @Test
-    public void mustParseGetList(){
+    public void mustParseGetListActions(){
         //given:
         ActionDoneParser parser=  new ActionDoneParser();
 
@@ -79,7 +91,7 @@ public class ActionDoneParserTest {
     }
 
     @Test
-    public void mustParseComment(){
+    public void mustParseCommentActions(){
         //given:
         ActionDoneParser parser=  new ActionDoneParser();
 
@@ -96,7 +108,7 @@ public class ActionDoneParserTest {
     }
 
     @Test
-    public void mustParseDtObject(){
+    public void mustParseDtObjectActions(){
         //given:
         ActionDoneParser parser=  new ActionDoneParser();
 
