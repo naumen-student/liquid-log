@@ -3,13 +3,7 @@ package ru.naumen.perfhouse.influx;
 import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.AVARAGE_GC_TIME;
 import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.GCTIMES;
 import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.MAX_GC_TIME;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.ADD_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.COMMENT_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.EDIT_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.GET_DT_OBJECT_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.GET_FORM_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.LIST_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.SEARCH_ACTIONS;
+import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.*;
 import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.COUNT;
 import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.ERRORS;
 import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.MAX;
@@ -134,7 +128,8 @@ public class InfluxDAO
                 .addField(COMMENT_ACTIONS, dones.getCommentActions())
                 .addField(GET_FORM_ACTIONS, dones.getFormActions())
                 .addField(GET_DT_OBJECT_ACTIONS, dones.getDtObjectActions())
-                .addField(SEARCH_ACTIONS, dones.getSearchActions());
+                .addField(SEARCH_ACTIONS, dones.getSearchActions())
+                .addField(GET_CATALOGS_ACTION, dones.getGetCatalogsActions());
 
 
         //@formatter:on

@@ -65,6 +65,7 @@ public class App
         switch (mode)
         {
         case "sdng":
+
             //Parse sdng
             try (BufferedReader br = new BufferedReader(new FileReader(log), 32 * 1024 * 1024))
             {
@@ -135,7 +136,8 @@ public class App
             {
                 System.out.print(String.format("%d;%d;%f;%f;%f;%f;%f;%f;%f;%f;%d\n", k, dones.getCount(),
                         dones.getMin(), dones.getMean(), dones.getStddev(), dones.getPercent50(), dones.getPercent95(),
-                        dones.getPercent99(), dones.getPercent999(), dones.getMax(), erros.getErrorCount()));
+                        dones.getPercent99(), dones.getPercent999(), dones.getMax(),
+                        erros.getErrorCount()));
             }
             if (!dones.isNan())
             {

@@ -33,6 +33,7 @@
     Number dtos[] = (Number[])request.getAttribute(Constants.PerformedActions.GET_DT_OBJECT_ACTIONS);
     Number search[] = (Number[])request.getAttribute(Constants.PerformedActions.SEARCH_ACTIONS);
     Number actionsSumm[] = (Number[])request.getAttribute(Constants.PerformedActions.ACTIONS_COUNT);
+    Number catalogs[] = (Number[])request.getAttribute(Constants.PerformedActions.GET_CATALOGS_ACTION);
     
     
   //Prepare links
@@ -96,8 +97,9 @@
 <div class="scroll-container">
 	<table class="table table-fixed header-fixed">
         <thead class="thead-inverse">
-            <th class="col-xs-4">Time</th>
+            <th class="col-xs-3">Time</th>
             <th class="col-xs-1">Summ</th>
+            <th class="col-xs-1">GetCatalogs</th>
             <th class="col-xs-1">Addobject</th>
             <th class="col-xs-1">EditObject</th>
             <th class="col-xs-1">GetList</th>
@@ -109,12 +111,14 @@
         <tbody >
             <% for(int i=0;i<times.length;i++) {%>
                 <tr class="row">
-                    <td class="col-xs-4" style="text-align:center;">
+                    <td class="col-xs-3" style="text-align:center;">
                        <%= new java.util.Date(times[i].longValue()).toString() %>
                     </td>
                     <td class="col-xs-1">
                         <%= actionsSumm[i].intValue() %>
                     </td>
+                    <td class="col-xs-1">
+                       <%= catalogs[i].intValue()%>
                     <td class="col-xs-1" >
                         <%= add[i].intValue() %>
                     </td>
@@ -153,6 +157,7 @@ var form = [];
 var dtos = [];
 var search = [];
 var summ = [];
+var cats = [];
 
 <% for(int i=0;i<times.length;i++) {%>
     times.push((<%=times[i]%>));
@@ -164,6 +169,7 @@ var summ = [];
     dtos.push([new Date(<%= times[i] %>), <%= dtos[i].intValue() %>]);
     search.push([new Date(<%= times[i] %>), <%= search[i].intValue() %>]);
     summ.push([new Date(<%= times[i] %>), <%= actionsSumm[i].intValue() %>]);
+    cats.push([new Date(<%= times[i] %>), <%= catalogs[i].intValue() %>]);
 
 <% } %>
 
@@ -175,6 +181,10 @@ if(localStorage.getItem('addActions')==null){
 if(localStorage.getItem('editActions')==null){
     localStorage.setItem('editActions', 'false');
 }
+if (localStorage.getItem('getCatalogsAction')==null){
+    localStorage.setItem('getCatalogsAction', 'false');
+}
+
 if(localStorage.getItem('listActions')==null){
     localStorage.setItem('listActions', 'true');
 }
@@ -190,6 +200,7 @@ if(localStorage.getItem('dtObjectActions')==null){
 if(localStorage.getItem('searchActions')==null){
     localStorage.setItem('searchActions', 'true');
 }
+
 if(localStorage.getItem('summary')==null){
     localStorage.setItem('summary', 'true');
 }
@@ -202,6 +213,7 @@ var	formVisible = localStorage.getItem('formActions')==='true';
 var dtosVisible = localStorage.getItem('dtObjectActions')==='true';
 var searchVisible = localStorage.getItem('searchActions')==='true';
 var summVisible = localStorage.getItem('summary')==='true';
+var catalogsVisible = localStorage.getItem('getCatalogsAction')==='true';
 
 Highcharts.setOptions({
 	global: {
@@ -282,6 +294,9 @@ var myChart = Highcharts.chart('actions-chart-container', {
                         if(event.target.index==7){
                             localStorage.setItem('summary', !series[7].visible);
                         }
+                        if (event.target.index == 8) {
+                            localStorage.setItem('getCatalogsAction', !series[8].visible);
+                        }
                     }
                 }
             }
@@ -327,6 +342,12 @@ var myChart = Highcharts.chart('actions-chart-container', {
             data: summ,
             visible: summVisible,
             turboThreshold: 10000
+        }, {
+            name: 'GetCatalogs',
+            data: cats,
+            visible: catalogsVisible,
+            turboThreshold: 10000
+
         }]
 });
 
