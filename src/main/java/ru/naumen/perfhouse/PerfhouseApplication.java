@@ -29,6 +29,7 @@ public class PerfhouseApplication extends SpringBootServletInitializer
         {
             SpringApplication.run(PerfhouseApplication.class, args);
         }
+
     }
 
 }
