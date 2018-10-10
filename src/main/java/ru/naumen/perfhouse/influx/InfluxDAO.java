@@ -3,28 +3,9 @@ package ru.naumen.perfhouse.influx;
 import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.AVARAGE_GC_TIME;
 import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.GCTIMES;
 import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.MAX_GC_TIME;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.ADD_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.COMMENT_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.EDIT_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.GET_DT_OBJECT_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.GET_FORM_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.LIST_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.SEARCH_ACTIONS;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.COUNT;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.ERRORS;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.MAX;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.MEAN;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE50;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE95;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE99;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE999;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.STDDEV;
-import static ru.naumen.perfhouse.statdata.Constants.Top.AVG_CPU;
-import static ru.naumen.perfhouse.statdata.Constants.Top.AVG_LA;
-import static ru.naumen.perfhouse.statdata.Constants.Top.AVG_MEM;
-import static ru.naumen.perfhouse.statdata.Constants.Top.MAX_CPU;
-import static ru.naumen.perfhouse.statdata.Constants.Top.MAX_LA;
-import static ru.naumen.perfhouse.statdata.Constants.Top.MAX_MEM;
+import static ru.naumen.perfhouse.statdata.Constants.PerformedActions;
+import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes;
+import static ru.naumen.perfhouse.statdata.Constants.Top;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +44,6 @@ public class InfluxDAO
     private String password;
 
     private InfluxDB influx;
-
     @Autowired
     public InfluxDAO(@Value("${influx.host}") String influxHost, @Value("${influx.user}") String user,
             @Value("${influx.password}") String password)
@@ -118,23 +98,24 @@ public class InfluxDAO
     {
         //@formatter:off
         Builder builder = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
-                .addField(COUNT, dones.getCount())
+                .addField(ResponseTimes.COUNT, dones.getCount())
                 .addField("min", dones.getMin())
-                .addField(MEAN, dones.getMean())
-                .addField(STDDEV, dones.getStddev())
-                .addField(PERCENTILE50, dones.getPercent50())
-                .addField(PERCENTILE95, dones.getPercent95())
-                .addField(PERCENTILE99, dones.getPercent99())
-                .addField(PERCENTILE999, dones.getPercent999())
-                .addField(MAX, dones.getMax())
-                .addField(ERRORS, errors.getErrorCount())
-                .addField(ADD_ACTIONS, dones.getAddObjectActions())
-                .addField(EDIT_ACTIONS, dones.getEditObjectsActions())
-                .addField(LIST_ACTIONS, dones.geListActions())
-                .addField(COMMENT_ACTIONS, dones.getCommentActions())
-                .addField(GET_FORM_ACTIONS, dones.getFormActions())
-                .addField(GET_DT_OBJECT_ACTIONS, dones.getDtObjectActions())
-                .addField(SEARCH_ACTIONS, dones.getSearchActions());
+                .addField(ResponseTimes.MEAN, dones.getMean())
+                .addField(ResponseTimes.STDDEV, dones.getStddev())
+                .addField(ResponseTimes.PERCENTILE50, dones.getPercent50())
+                .addField(ResponseTimes.PERCENTILE95, dones.getPercent95())
+                .addField(ResponseTimes.PERCENTILE99, dones.getPercent99())
+                .addField(ResponseTimes.PERCENTILE999, dones.getPercent999())
+                .addField(ResponseTimes.MAX, dones.getMax())
+                .addField(ResponseTimes.ERRORS, errors.getErrorCount())
+                .addField(PerformedActions.ADD_ACTIONS, dones.getAddObjectActions())
+                .addField(PerformedActions.EDIT_ACTIONS, dones.getEditObjectsActions())
+                .addField(PerformedActions.LIST_ACTIONS, dones.geListActions())
+                .addField(PerformedActions.COMMENT_ACTIONS, dones.getCommentActions())
+                .addField(PerformedActions.GET_FORM_ACTIONS, dones.getFormActions())
+                .addField(PerformedActions.GET_DT_OBJECT_ACTIONS, dones.getDtObjectActions())
+                .addField(PerformedActions.SEARCH_ACTIONS, dones.getSearchActions())
+                .addField(PerformedActions.GET_CATALOGS_ACTIONS, dones.getCatalogsActions());
 
 
         //@formatter:on
@@ -200,9 +181,9 @@ public class InfluxDAO
     public void storeTop(BatchPoints batch, String dbName, long date, TopData data)
     {
         Point point = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
-                .addField(AVG_LA, data.getAvgLa()).addField(AVG_CPU, data.getAvgCpuUsage())
-                .addField(AVG_MEM, data.getAvgMemUsage()).addField(MAX_LA, data.getMaxLa())
-                .addField(MAX_CPU, data.getMaxCpu()).addField(MAX_MEM, data.getMaxMem()).build();
+                .addField(Top.AVG_LA, data.getAvgLa()).addField(Top.AVG_CPU, data.getAvgCpuUsage())
+                .addField(Top.AVG_MEM, data.getAvgMemUsage()).addField(Top.MAX_LA, data.getMaxLa())
+                .addField(Top.MAX_CPU, data.getMaxCpu()).addField(Top.MAX_MEM, data.getMaxMem()).build();
         if (batch != null)
         {
             batch.getPoints().add(point);

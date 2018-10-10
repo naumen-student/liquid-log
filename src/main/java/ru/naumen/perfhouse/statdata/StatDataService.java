@@ -32,7 +32,7 @@ public class StatDataService
         @Override
         public int compare(T o1, T o2)
         {
-            //Standart java classes are comparable
+            //Standard java classes are comparable
             if (o1 instanceof Comparable && o1.getClass().equals(o2.getClass()))
             {
                 return ((Comparable<T>)o1).compareTo(o2);
@@ -116,9 +116,7 @@ public class StatDataService
         {
             return null;
         }
-
-        StatData data = createData(result);
-        return data;
+        return createData(result);
     }
 
     public StatData getDataCustom(String client, DataType type, String from, String to) throws ParseException

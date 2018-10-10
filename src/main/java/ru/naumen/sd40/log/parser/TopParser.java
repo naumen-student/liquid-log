@@ -27,7 +27,7 @@ public class TopParser
 
     private Pattern timeRegex = Pattern.compile("^_+ (\\S+)");
 
-    private Pattern cpuAndMemPattren = Pattern
+    private Pattern cpuAndMemPattern = Pattern
             .compile("^ *\\d+ \\S+ +\\S+ +\\S+ +\\S+ +\\S+ +\\S+ +\\S+ \\S+ +(\\S+) +(\\S+) +\\S+ java");
 
     private DataSet currentSet;
@@ -86,7 +86,7 @@ public class TopParser
             }
 
             //get cpu and mem
-            Matcher cpuAndMemMatcher = cpuAndMemPattren.matcher(line);
+            Matcher cpuAndMemMatcher = cpuAndMemPattern.matcher(line);
             if (cpuAndMemMatcher.find())
             {
                 currentSet.cpuData().addCpu(Double.valueOf(cpuAndMemMatcher.group(1)));

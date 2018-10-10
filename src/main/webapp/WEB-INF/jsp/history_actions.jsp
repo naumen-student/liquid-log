@@ -33,6 +33,7 @@
     Number dtos[] = (Number[])request.getAttribute(Constants.PerformedActions.GET_DT_OBJECT_ACTIONS);
     Number search[] = (Number[])request.getAttribute(Constants.PerformedActions.SEARCH_ACTIONS);
     Number actionsSumm[] = (Number[])request.getAttribute(Constants.PerformedActions.ACTIONS_COUNT);
+    Number catalogActions[] = (Number[])request.getAttribute(Constants.PerformedActions.GET_CATALOGS_ACTIONS);
     
     
   //Prepare links
@@ -122,6 +123,9 @@
                         <%= edit[i].intValue() %>
                     </td>
                     <td class="col-xs-1">
+                        <%= catalogActions[i].intValue() %>
+                    </td>
+                    <td class="col-xs-1">
                         <%= list[i].intValue() %>
                     </td>
                     <td class="col-xs-1">
@@ -153,6 +157,7 @@ var form = [];
 var dtos = [];
 var search = [];
 var summ = [];
+var catalogs = [];
 
 <% for(int i=0;i<times.length;i++) {%>
     times.push((<%=times[i]%>));
@@ -164,6 +169,7 @@ var summ = [];
     dtos.push([new Date(<%= times[i] %>), <%= dtos[i].intValue() %>]);
     search.push([new Date(<%= times[i] %>), <%= search[i].intValue() %>]);
     summ.push([new Date(<%= times[i] %>), <%= actionsSumm[i].intValue() %>]);
+    catalogs.push([new Date(<%= times[i] %>), <%= catalogActions[i].intValue() %>]);
 
 <% } %>
 
@@ -193,7 +199,9 @@ if(localStorage.getItem('searchActions')==null){
 if(localStorage.getItem('summary')==null){
     localStorage.setItem('summary', 'true');
 }
-
+if(localStorage.getItem('getCatalogs')==null){
+    localStorage.setItem('getCatalogs', 'true')
+}
 var addVisible = localStorage.getItem('addActions')==='true';
 var editVisible = localStorage.getItem('editActions')==='true';
 var listVisible = localStorage.getItem('listActions')==='true';
@@ -202,6 +210,7 @@ var	formVisible = localStorage.getItem('formActions')==='true';
 var dtosVisible = localStorage.getItem('dtObjectActions')==='true';
 var searchVisible = localStorage.getItem('searchActions')==='true';
 var summVisible = localStorage.getItem('summary')==='true';
+var catalogsVisible = localStorage.getItem('summary')==='true';
 
 Highcharts.setOptions({
 	global: {
@@ -282,6 +291,9 @@ var myChart = Highcharts.chart('actions-chart-container', {
                         if(event.target.index==7){
                             localStorage.setItem('summary', !series[7].visible);
                         }
+                        if(event.target.index==8){
+                            localStorage.setItem('getCatalogs', !series[8].visible)
+                        }
                     }
                 }
             }
@@ -327,7 +339,12 @@ var myChart = Highcharts.chart('actions-chart-container', {
             data: summ,
             visible: summVisible,
             turboThreshold: 10000
-        }]
+        }, {
+            name: 'GetCatalogs',
+            data: catalogs,
+            visible: catalogsVisible,
+            turboThreshold: 10000
+            }]
 });
 
 </script>
