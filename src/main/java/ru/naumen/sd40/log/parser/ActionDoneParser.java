@@ -43,7 +43,9 @@ public class ActionDoneParser
 
     private int searchActions = 0;
 
-    boolean nan = true;
+    private int getCatalogsActions = 0;
+
+    boolean isNan = true;
 
     private HashMap<String, Integer> actions = new HashMap<>();
 
@@ -62,7 +64,7 @@ public class ActionDoneParser
         percent999 = ds.getPercentile(99.9);
         max = ds.getMax();
         count = ds.getN();
-        nan = count == 0;
+        isNan = count == 0;
     }
 
     public int geListActions()
@@ -94,6 +96,8 @@ public class ActionDoneParser
     {
         return doneRegEx;
     }
+
+    public int getCatalogsActions(){return getCatalogsActions;}
 
     public int getDtObjectActions()
     {
@@ -162,7 +166,7 @@ public class ActionDoneParser
 
     public boolean isNan()
     {
-        return nan;
+        return isNan;
     }
 
     public void parseLine(String line)
@@ -207,6 +211,10 @@ public class ActionDoneParser
             else if (actionInLowerCase.matches("(?i)[a-zA-Z]+search[a-zA-Z]+"))
             {
                 searchActions++;
+            }
+            else if (actionInLowerCase.matches("(?i)^([a-zA-Z]+|Get)[a-zA-Z]+CatalogsAction[a-zA-Z]+"))
+            {
+                getCatalogsActions++;
             }
 
         }
