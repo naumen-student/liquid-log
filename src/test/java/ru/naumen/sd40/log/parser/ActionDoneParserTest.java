@@ -31,6 +31,18 @@ public class ActionDoneParserTest {
     }
 
     @Test
+    public void mustParseGetCatalogsAction() {
+        //given
+        ActionDoneParser parser = new ActionDoneParser();
+
+        //when
+        parser.parseLine("Done(1): GetCatalogsAction");
+
+        //then
+        Assert.assertEquals(1, parser.getCatalogsActions());
+    }
+
+    @Test
     public void mustParseEditObject() {
         //given
         ActionDoneParser parser=  new ActionDoneParser();
