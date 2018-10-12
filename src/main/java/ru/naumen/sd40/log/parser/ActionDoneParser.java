@@ -12,7 +12,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 /**
  * Created by doki on 22.10.16.
  */
-public class ActionDoneParser
+public class ActionDoneParser implements DataParser
 {
     private static Set<String> EXCLUDED_ACTIONS = new HashSet<>();
 

@@ -17,13 +17,21 @@ public class DataSet
         gc = new GCParser();
     }
 
-    public void parseLine(String line)
+
+    public  void parse(String line, ParsingMethod method) {
+        if (method ==  ParsingMethod.GC)
+            parseGcLine(line);
+        if (method == ParsingMethod.SDNG)
+            parseLine(line);
+
+    }
+    private void parseLine(String line)
     {
         errors.parseLine(line);
         actionsDone.parseLine(line);
     }
 
-    public void parseGcLine(String line)
+    private void parseGcLine(String line)
     {
         gc.parseLine(line);
     }
