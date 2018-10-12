@@ -17,6 +17,7 @@ public class DataSet
         gc = new GCParser();
     }
 
+
     public  void parse(String line, ParsingMethod method) {
         if (method ==  ParsingMethod.GC)
             parseGcLine(line);

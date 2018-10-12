@@ -53,8 +53,8 @@ public class App
 
         HashMap<Long, DataSet> data = new HashMap<>();
 
-        SdngTimeParser sdngTimeParser = new SdngTimeParser();
-        GCTimeParser gcTime = new GCTimeParser();
+        TimeParser sdngTimeParser = new SdngTimeParser();
+        TimeParser gcTime = new GCTimeParser();
         if (args.length > 2)
         {
             sdngTimeParser = new SdngTimeParser(args[2]);
@@ -67,14 +67,14 @@ public class App
         case "sdng":
 
             //Parse sdng
-            readLogFromBuffer(log, data, sdngTimeParser, ParsingMethod.SDNG);
+            readTimeDataLogFromBuffer(log, data, sdngTimeParser, ParsingMethod.SDNG);
             break;
         case "gc":
             //Parse gc log
-            readLogFromBuffer(log, data, gcTime, ParsingMethod.GC);
+            readTimeDataLogFromBuffer(log, data, gcTime, ParsingMethod.GC);
             break;
         case "top":
-            TopParser topParser = new TopParser(log, data);
+            AbstractFileDataParser topParser = new TopParser(log, data);
             if (args.length > 2)
             {
                 topParser.configureTimeZone(args[2]);
@@ -124,7 +124,7 @@ public class App
         storage.writeBatch(points);
     }
 
-    public static void readLogFromBuffer(String log,
+    public static void readTimeDataLogFromBuffer(String log,
                                          HashMap<Long, DataSet> data,
                                          TimeParser parser,
                                          ParsingMethod howToParse) {
