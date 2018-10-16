@@ -170,7 +170,7 @@ public class ActionDoneParser implements DataParser
         return nan;
     }
 
-    public void parseLine(String line)
+    public void parseLine(String line, DataSet ds)
     {
         Matcher matcher = doneRegEx.matcher(line);
 

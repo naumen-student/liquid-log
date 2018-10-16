@@ -9,32 +9,26 @@ import java.util.HashMap;
 import org.influxdb.dto.BatchPoints;
 
 import ru.naumen.perfhouse.influx.InfluxDAO;
-import ru.naumen.sd40.log.parser.GCParser.GCTimeParser;
 
 /**
  * Created by doki on 22.10.16.
  */
-public class App
-{
+public class App {
     /**
-     * 
      * @param args [0] - sdng.log, [1] - gc.log, [2] - top, [3] - dbName, [4] timezone
      * @throws IOException
      * @throws ParseException
      */
-    public static void main(String[] args) throws IOException, ParseException
-    {
+    public static void main(String[] args) throws IOException, ParseException {
         String influxDb = null;
 
-        if (args.length > 1)
-        {
+        if (args.length > 1) {
             influxDb = args[1];
             influxDb = influxDb.replaceAll("-", "_");
         }
 
         InfluxDAO storage = null;
-        if (influxDb != null)
-        {
+        if (influxDb != null) {
             storage = new InfluxDAO(System.getProperty("influx.host"), System.getProperty("influx.user"),
                     System.getProperty("influx.password"));
             storage.init();
@@ -44,8 +38,7 @@ public class App
         String finalInfluxDb = influxDb;
         BatchPoints points = null;
 
-        if (storage != null)
-        {
+        if (storage != null) {
             points = storage.startBatchPoints(influxDb);
         }
 
@@ -53,102 +46,79 @@ public class App
 
         HashMap<Long, DataSet> data = new HashMap<>();
 
-        TimeParser sdngTimeParser = new SdngTimeParser();
-        TimeParser gcTime = new GCTimeParser();
-        if (args.length > 2)
-        {
-            sdngTimeParser = new SdngTimeParser(args[2]);
-            gcTime = new GCTimeParser(args[2]);
-        }
+        TimeParser timeParser;
+        DataParser dataParser;
 
         String mode = System.getProperty("parse.mode", "");
-        switch (mode)
-        {
-        case "sdng":
 
-            //Parse sdng
-            readTimeDataLogFromBuffer(log, data, sdngTimeParser, ParsingMethod.SDNG);
-            break;
-        case "gc":
-            //Parse gc log
-            readTimeDataLogFromBuffer(log, data, gcTime, ParsingMethod.GC);
-            break;
-        case "top":
-            AbstractFileDataParser topParser = new TopParser(log, data);
-            if (args.length > 2)
-            {
-                topParser.configureTimeZone(args[2]);
-            }
-            //Parse top
-            topParser.parse();
-            break;
-        default:
-            throw new IllegalArgumentException(
-                    "Unknown parse mode! Availiable modes: sdng, gc, top. Requested mode: " + mode);
+        switch (mode) {
+            case "sdng":
+                timeParser = new SdngTimeParser();
+                dataParser = new SdngDataParser();
+                break;
+            case "gc":
+                timeParser = new GcTimeParser();
+                dataParser = new GcDataParser();
+                break;
+            case "top":
+                timeParser = new TopTimeParser(log);
+                dataParser = new TopDataParser();
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown parse mode! Availiable modes: sdng, gc, top. Requested mode: " + mode);
         }
 
-        if (System.getProperty("NoCsv") == null)
-        {
-            System.out.print("Timestamp;Actions;Min;Mean;Stddev;50%%;95%%;99%%;99.9%%;Max;Errors\n");
+        if (args.length > 2) {
+            timeParser.configureTimeZone(args[2]);
         }
-        BatchPoints finalPoints = points;
-        data.forEach((k, set) ->
-        {
-            ActionDoneParser dones = set.getActionsDone();
-            dones.calculate();
-            ErrorParser erros = set.getErrors();
-            if (System.getProperty("NoCsv") == null)
-            {
-                System.out.print(String.format("%d;%d;%f;%f;%f;%f;%f;%f;%f;%f;%d\n", k, dones.getCount(),
-                        dones.getMin(), dones.getMean(), dones.getStddev(), dones.getPercent50(), dones.getPercent95(),
-                        dones.getPercent99(), dones.getPercent999(), dones.getMax(),
-                        erros.getErrorCount()));
-            }
-            if (!dones.isNan())
-            {
-                finalStorage.storeActionsFromLog(finalPoints, finalInfluxDb, k, dones, erros);
-            }
 
-            GCParser gc = set.getGc();
-            if (!gc.isNan())
-            {
-                finalStorage.storeGc(finalPoints, finalInfluxDb, k, gc);
-            }
-
-            TopData cpuData = set.cpuData();
-            if (!cpuData.isNan())
-            {
-                finalStorage.storeTop(finalPoints, finalInfluxDb, k, cpuData);
-            }
-        });
-        storage.writeBatch(points);
-    }
-
-    public static void readTimeDataLogFromBuffer(String log,
-                                         HashMap<Long, DataSet> data,
-                                         TimeParser parser,
-                                         ParsingMethod howToParse) {
-
-        try (BufferedReader br = new BufferedReader(new FileReader(log), 32 * 1024 * 1024))
-        {
+        try (BufferedReader br = new BufferedReader(new FileReader(log))) {
             String line;
-            while ((line = br.readLine()) != null)
-            {
-                long time = parser.parseLine(line);
-
-                if (time == 0)
-                {
+            while ((line = br.readLine()) != null) {
+                long time = timeParser.parseLine(line);
+                if (time == 0) {
                     continue;
                 }
-
                 int min5 = 5 * 60 * 1000;
                 long count = time / min5;
                 long key = count * min5;
-
-                data.computeIfAbsent(key, k -> new DataSet()).parse(line, howToParse);
+                dataParser.parseLine(line, data.computeIfAbsent(key, k -> new DataSet()));
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+
+
+            if (System.getProperty("NoCsv") == null) {
+                System.out.print("Timestamp;Actions;Min;Mean;Stddev;50%%;95%%;99%%;99.9%%;Max;Errors\n");
+            }
+            BatchPoints finalPoints = points;
+            data.forEach((k, set) ->
+            {
+                ActionDoneParser dones = set.getActionsDone();
+                dones.calculate();
+                ErrorParser erros = set.getErrors();
+                if (System.getProperty("NoCsv") == null) {
+                    System.out.print(String.format("%d;%d;%f;%f;%f;%f;%f;%f;%f;%f;%d\n", k, dones.getCount(),
+                            dones.getMin(), dones.getMean(), dones.getStddev(), dones.getPercent50(), dones.getPercent95(),
+                            dones.getPercent99(), dones.getPercent999(), dones.getMax(),
+                            erros.getErrorCount()));
+                }
+                if (!dones.isNan()) {
+                    finalStorage.storeActionsFromLog(finalPoints, finalInfluxDb, k, dones, erros);
+                }
+
+                GcDataParser gc = set.getGc();
+                if (!gc.isNan()) {
+                    finalStorage.storeGc(finalPoints, finalInfluxDb, k, gc);
+                }
+
+                TopData cpuData = set.cpuData();
+                if (!cpuData.isNan()) {
+                    finalStorage.storeTop(finalPoints, finalInfluxDb, k, cpuData);
+                }
+            });
+            storage.writeBatch(points);
         }
+
+
     }
 }
