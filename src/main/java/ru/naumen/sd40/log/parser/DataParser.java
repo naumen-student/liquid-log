@@ -5,6 +5,6 @@ import java.text.ParseException;
 public interface DataParser {
 
 
-    void parseLine(String line) throws ParseException;
+    void parseLine(String line, DataSet ds) throws ParseException;
 
 }
