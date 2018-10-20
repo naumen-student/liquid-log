@@ -1,4 +1,4 @@
-package ru.naumen.sd40.log.parser;
+package ru.naumen.sd40.log.parser.dataset;
 
 import java.util.regex.Pattern;
 
@@ -15,7 +15,7 @@ public class ErrorParser
     Pattern errorRegEx = Pattern.compile("^\\d+ \\[.+?\\] \\(.+?\\) ERROR");
     Pattern fatalRegEx = Pattern.compile("^\\d+ \\[.+?\\] \\(.+?\\) FATAL");
 
-    void parseLine(String line)
+    public void parseLine(String line)
     {
         if (warnRegEx.matcher(line).find())
         {

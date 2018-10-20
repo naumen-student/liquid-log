@@ -14,4 +14,9 @@ public class NumberUtils
     {
         return Double.isNaN(value) ? 0.0d : value;
     }
+
+    public static long floorToClosestMultiple(long number, long divisor)
+    {
+        return (number / divisor) * divisor;
+    }
 }

@@ -2,6 +2,7 @@ package ru.naumen.sd40.log.parser;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.naumen.sd40.log.parser.dataset.ActionDoneParser;
 
 public class ActionDoneParserTest {
 

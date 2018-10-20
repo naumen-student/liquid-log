@@ -1,4 +1,4 @@
-package ru.naumen.sd40.log.parser;
+package ru.naumen.sd40.log.parser.dataset;
 
 import java.util.ArrayList;
 import java.util.HashMap;

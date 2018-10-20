@@ -5,17 +5,50 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.influxdb.dto.BatchPoints;
 
 import ru.naumen.perfhouse.influx.InfluxDAO;
-import ru.naumen.sd40.log.parser.GCParser.GCTimeParser;
+import ru.naumen.sd40.log.parser.data.GCDataSetPopulator;
+import ru.naumen.sd40.log.parser.data.DataSetPopulator;
+import ru.naumen.sd40.log.parser.data.SDNGDataSetPopulator;
+import ru.naumen.sd40.log.parser.data.TopDataSetPopulator;
+import ru.naumen.sd40.log.parser.dataset.*;
+import ru.naumen.sd40.log.parser.time.GCTimeParser;
+import ru.naumen.sd40.log.parser.time.TimeParser;
+import ru.naumen.sd40.log.parser.time.SDNGTimeParser;
+import ru.naumen.sd40.log.parser.time.TopTimeParser;
+
+import static ru.naumen.sd40.log.parser.NumberUtils.floorToClosestMultiple;
 
 /**
  * Created by doki on 22.10.16.
  */
 public class App
 {
+    public static final long TIME_ALIGNMENT = 5 * 60 * 1000;
+    public static final int READER_BUFFER_SIZE = 32 * 1024 * 1024;
+
+    private static HashMap<String, Supplier<TimeParser>> registerTimeParsers(String timeZone, String log)
+    {
+        HashMap<String, Supplier<TimeParser>> timeParsers = new HashMap<>();
+        timeParsers.put("sdng", () -> timeZone != null ? new SDNGTimeParser(timeZone) : new SDNGTimeParser());
+        timeParsers.put("gc", () -> timeZone != null ? new GCTimeParser(timeZone) : new GCTimeParser());
+        timeParsers.put("top", () -> new TopTimeParser(log));
+        return timeParsers;
+    }
+
+    private static HashMap<String, Supplier<DataSetPopulator>> registerDataSetPopulators()
+    {
+        HashMap<String, Supplier<DataSetPopulator>> dataSetPopulators = new HashMap<>();
+        dataSetPopulators.put("sdng", SDNGDataSetPopulator::new);
+        dataSetPopulators.put("gc", GCDataSetPopulator::new);
+        dataSetPopulators.put("top", TopDataSetPopulator::new);
+        return dataSetPopulators;
+    }
+
     /**
      * 
      * @param args [0] - sdng.log, [1] - gc.log, [2] - top, [3] - dbName, [4] timezone
@@ -53,72 +86,25 @@ public class App
 
         HashMap<Long, DataSet> data = new HashMap<>();
 
-        TimeParser timeParser = new TimeParser();
-        GCTimeParser gcTime = new GCTimeParser();
-        if (args.length > 2)
-        {
-            timeParser = new TimeParser(args[2]);
-            gcTime = new GCTimeParser(args[2]);
-        }
 
         String mode = System.getProperty("parse.mode", "");
-        switch (mode)
+
+        TimeParser timeParser = registerTimeParsers(args.length > 2 ? args[2] : null, log).get(mode).get();
+        DataSetPopulator dataSetPopulator = registerDataSetPopulators().get(mode).get();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(log), READER_BUFFER_SIZE))
         {
-        case "sdng":
-            //Parse sdng
-            try (BufferedReader br = new BufferedReader(new FileReader(log), 32 * 1024 * 1024))
+            String line;
+            while ((line = br.readLine()) != null)
             {
-                String line;
-                while ((line = br.readLine()) != null)
+                Optional<Long> time = timeParser.parse(line);
+
+                if (time.isPresent())
                 {
-                    long time = timeParser.parseLine(line);
-
-                    if (time == 0)
-                    {
-                        continue;
-                    }
-
-                    int min5 = 5 * 60 * 1000;
-                    long count = time / min5;
-                    long key = count * min5;
-
-                    data.computeIfAbsent(key, k -> new DataSet()).parseLine(line);
+                    long key = floorToClosestMultiple(time.get(), TIME_ALIGNMENT);
+                    dataSetPopulator.populate(line, data.computeIfAbsent(key, k -> new DataSet()));
                 }
             }
-            break;
-        case "gc":
-            //Parse gc log
-            try (BufferedReader br = new BufferedReader(new FileReader(log)))
-            {
-                String line;
-                while ((line = br.readLine()) != null)
-                {
-                    long time = gcTime.parseTime(line);
-
-                    if (time == 0)
-                    {
-                        continue;
-                    }
-
-                    int min5 = 5 * 60 * 1000;
-                    long count = time / min5;
-                    long key = count * min5;
-                    data.computeIfAbsent(key, k -> new DataSet()).parseGcLine(line);
-                }
-            }
-            break;
-        case "top":
-            TopParser topParser = new TopParser(log, data);
-            if (args.length > 2)
-            {
-                topParser.configureTimeZone(args[2]);
-            }
-            //Parse top
-            topParser.parse();
-            break;
-        default:
-            throw new IllegalArgumentException(
-                    "Unknown parse mode! Availiable modes: sdng, gc, top. Requested mode: " + mode);
         }
 
         if (System.getProperty("NoCsv") == null)
@@ -148,10 +134,10 @@ public class App
                 finalStorage.storeGc(finalPoints, finalInfluxDb, k, gc);
             }
 
-            TopData cpuData = set.cpuData();
-            if (!cpuData.isNan())
+            TopParser topParser = set.getTop();
+            if (!topParser.isNan())
             {
-                finalStorage.storeTop(finalPoints, finalInfluxDb, k, cpuData);
+                finalStorage.storeTop(finalPoints, finalInfluxDb, k, topParser);
             }
         });
         storage.writeBatch(points);
