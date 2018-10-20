@@ -8,14 +8,11 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.influxdb.dto.BatchPoints;
-
-import ru.naumen.perfhouse.influx.InfluxDAO;
+import ru.naumen.perfhouse.influx.InfluxConnector;
 import ru.naumen.sd40.log.parser.data.GCDataSetPopulator;
 import ru.naumen.sd40.log.parser.data.DataSetPopulator;
 import ru.naumen.sd40.log.parser.data.SDNGDataSetPopulator;
 import ru.naumen.sd40.log.parser.data.TopDataSetPopulator;
-import ru.naumen.sd40.log.parser.dataset.*;
 import ru.naumen.sd40.log.parser.time.GCTimeParser;
 import ru.naumen.sd40.log.parser.time.TimeParser;
 import ru.naumen.sd40.log.parser.time.SDNGTimeParser;
@@ -26,7 +23,7 @@ import static ru.naumen.sd40.log.parser.NumberUtils.floorToClosestMultiple;
 /**
  * Created by doki on 22.10.16.
  */
-public class App
+public class LogUploader
 {
     public static final long TIME_ALIGNMENT = 5 * 60 * 1000;
     public static final int READER_BUFFER_SIZE = 32 * 1024 * 1024;
@@ -57,36 +54,18 @@ public class App
      */
     public static void main(String[] args) throws IOException, ParseException
     {
-        String influxDb = null;
-
-        if (args.length > 1)
+        if (args.length <= 1)
         {
-            influxDb = args[1];
-            influxDb = influxDb.replaceAll("-", "_");
+            System.out.println("Not enough arguments for database initialization");
         }
-
-        InfluxDAO storage = null;
-        if (influxDb != null)
-        {
-            storage = new InfluxDAO(System.getProperty("influx.host"), System.getProperty("influx.user"),
-                    System.getProperty("influx.password"));
-            storage.init();
-            storage.connectToDB(influxDb);
-        }
-        InfluxDAO finalStorage = storage;
-        String finalInfluxDb = influxDb;
-        BatchPoints points = null;
-
-        if (storage != null)
-        {
-            points = storage.startBatchPoints(influxDb);
-        }
+        String dbName = args[1].replaceAll("-", "_");
+        DataSetUploader uploader = new DataSetUploader(new InfluxConnector(
+                dbName,
+                System.getProperty("influx.host"),
+                System.getProperty("influx.user"),
+                System.getProperty("influx.password")));
 
         String log = args[0];
-
-        HashMap<Long, DataSet> data = new HashMap<>();
-
-
         String mode = System.getProperty("parse.mode", "");
 
         TimeParser timeParser = registerTimeParsers(args.length > 2 ? args[2] : null, log).get(mode).get();
@@ -102,44 +81,12 @@ public class App
                 if (time.isPresent())
                 {
                     long key = floorToClosestMultiple(time.get(), TIME_ALIGNMENT);
-                    dataSetPopulator.populate(line, data.computeIfAbsent(key, k -> new DataSet()));
+                    dataSetPopulator.populate(line, uploader.get(key));
                 }
             }
+        } catch (DataSetUploader.AlreadyProcessedKeyException e) {
+            System.out.println("Log file has incorrect format: log lines are not ordered by time.");
         }
-
-        if (System.getProperty("NoCsv") == null)
-        {
-            System.out.print("Timestamp;Actions;Min;Mean;Stddev;50%%;95%%;99%%;99.9%%;Max;Errors\n");
-        }
-        BatchPoints finalPoints = points;
-        data.forEach((k, set) ->
-        {
-            ActionDoneParser dones = set.getActionsDone();
-            dones.calculate();
-            ErrorParser erros = set.getErrors();
-            if (System.getProperty("NoCsv") == null)
-            {
-                System.out.print(String.format("%d;%d;%f;%f;%f;%f;%f;%f;%f;%f;%d\n", k, dones.getCount(),
-                        dones.getMin(), dones.getMean(), dones.getStddev(), dones.getPercent50(), dones.getPercent95(),
-                        dones.getPercent99(), dones.getPercent999(), dones.getMax(), erros.getErrorCount()));
-            }
-            if (!dones.isNan())
-            {
-                finalStorage.storeActionsFromLog(finalPoints, finalInfluxDb, k, dones, erros);
-            }
-
-            GCParser gc = set.getGc();
-            if (!gc.isNan())
-            {
-                finalStorage.storeGc(finalPoints, finalInfluxDb, k, gc);
-            }
-
-            TopParser topParser = set.getTop();
-            if (!topParser.isNan())
-            {
-                finalStorage.storeTop(finalPoints, finalInfluxDb, k, topParser);
-            }
-        });
-        storage.writeBatch(points);
+        uploader.close();
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
-import ru.naumen.sd40.log.parser.App;
+import ru.naumen.sd40.log.parser.LogUploader;
 
 @SpringBootApplication(scanBasePackages = { "ru.naumen" })
 public class PerfhouseApplication extends SpringBootServletInitializer
@@ -23,7 +23,7 @@ public class PerfhouseApplication extends SpringBootServletInitializer
     {
         if (System.getProperty("Parser") != null)
         {
-            App.main(args);
+            LogUploader.main(args);
         }
         else
         {

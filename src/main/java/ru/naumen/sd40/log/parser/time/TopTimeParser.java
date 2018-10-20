@@ -7,7 +7,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static ru.naumen.sd40.log.parser.App.TIME_ALIGNMENT;
+import static ru.naumen.sd40.log.parser.LogUploader.TIME_ALIGNMENT;
 import static ru.naumen.sd40.log.parser.NumberUtils.floorToClosestMultiple;
 
 public class TopTimeParser implements TimeParser
@@ -36,6 +36,8 @@ public class TopTimeParser implements TimeParser
             lastParsedTime = floorToClosestMultiple(sdf.parse(dataDate + matcher.group(1)).getTime(), TIME_ALIGNMENT);
             return Optional.empty();
         }
+        if (line.length() == 0)
+            return Optional.empty();
         return Optional.of(lastParsedTime);
     }
 }
