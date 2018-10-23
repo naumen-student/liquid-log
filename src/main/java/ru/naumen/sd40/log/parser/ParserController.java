@@ -34,7 +34,7 @@ public class ParserController {
         HashMap<Long, DataSet> data = new HashMap<>();
 
 
-        InfluxConnector connector = new InfluxConnector(influxDb, System.getProperty("influx.host"),
+        Holder connector = new InfluxConnector(influxDb, System.getProperty("influx.host"),
                 System.getProperty("influx.user"), System.getProperty("influx.password"));
 
         connector.connect();
@@ -86,7 +86,8 @@ public class ParserController {
                 DataSet ds = controller.get(key);
                 dataParser.parseLine(line, ds);
             }
-            controller.close();
+
         }
+        controller.close();
     }
 }

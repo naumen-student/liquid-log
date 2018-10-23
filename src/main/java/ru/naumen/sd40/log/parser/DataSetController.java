@@ -4,11 +4,11 @@ import java.security.InvalidParameterException;
 
 public class DataSetController {
 
-    private InfluxConnector connector;
+    private Holder connector;
     private long currentKey = -1;
     private DataSet currentDataSet;
 
-    public DataSetController(InfluxConnector connector) {
+    public DataSetController(Holder connector) {
 
         this.connector = connector;
     }

@@ -18,6 +18,17 @@ public class SdngTimeParser implements TimeParser
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd MMM yyyy HH:mm:ss,SSS",
             new Locale("ru", "RU"));
 
+    public SdngTimeParser()
+    {
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+    }
+
+    public SdngTimeParser(String zoneId)
+    {
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone(zoneId));
+    }
+
+
     @Override
     public void configureTimeZone(String timeZone) {
         DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));

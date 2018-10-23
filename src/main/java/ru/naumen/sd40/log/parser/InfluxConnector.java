@@ -19,7 +19,7 @@ public class InfluxConnector implements Holder {
     public void connect() {
         influxWrapper.init();
         influxWrapper.connectToDB(dbName);
-        points =influxWrapper.startBatchPoints(dbName);
+        points = influxWrapper.startBatchPoints(dbName);
     }
 
     public  void close() {
