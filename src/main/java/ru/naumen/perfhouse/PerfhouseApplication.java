@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import ru.naumen.sd40.log.parser.DBCloseException;
 import ru.naumen.sd40.log.parser.ParserController;
 
 @SpringBootApplication(scanBasePackages = { "ru.naumen" })
@@ -19,7 +20,7 @@ public class PerfhouseApplication extends SpringBootServletInitializer
     }
 
 
-    public static void main(String[] args) throws IOException, ParseException
+    public static void main(String[] args) throws IOException, ParseException, DBCloseException
     {
         if (System.getProperty("Parser") != null)
         {

@@ -2,7 +2,7 @@ package ru.naumen.sd40.log.parser;
 
 import java.security.InvalidParameterException;
 
-public class DataSetController {
+public class DataSetController implements AutoCloseable {
 
     private Holder connector;
     private long currentKey = -1;
@@ -29,7 +29,7 @@ public class DataSetController {
         throw new InvalidParameterException(String.format("Given key: %d is already stored", key));
     }
 
-    public void close() {
+    public void close() throws DBCloseException {
         connector.store(currentKey, currentDataSet);
         connector.close();
     }

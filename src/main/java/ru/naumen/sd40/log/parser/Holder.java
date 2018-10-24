@@ -1,10 +1,10 @@
 package ru.naumen.sd40.log.parser;
 
-public interface Holder {
+public interface Holder extends AutoCloseable {
 
     void store(long key, DataSet ds);
 
-    void close();
-
     void connect();
+
+    void close() throws DBCloseException;
 }

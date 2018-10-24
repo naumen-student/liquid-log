@@ -20,7 +20,7 @@ public class ParserController {
      * @throws IOException
      * @throws ParseException
      */
-    public static void main(String[] args) throws IOException, ParseException, InvalidParameterException {
+    public static void main(String[] args) throws DBCloseException, ParseException, IOException, InvalidParameterException {
 
         if (args.length <= 1) {
             System.exit(1);
@@ -33,13 +33,6 @@ public class ParserController {
 
         HashMap<Long, DataSet> data = new HashMap<>();
 
-
-        Holder connector = new InfluxConnector(influxDb, System.getProperty("influx.host"),
-                System.getProperty("influx.user"), System.getProperty("influx.password"));
-
-        connector.connect();
-
-        DataSetController controller = new DataSetController(connector);
 
         TimeParser timeParser;
         DataParser dataParser;
@@ -72,7 +65,14 @@ public class ParserController {
             System.out.print("Timestamp;Actions;Min;Mean;Stddev;50%%;95%%;99%%;99.9%%;Max;Errors\n");
         }
 
-        try (BufferedReader br = new BufferedReader(new FileReader(log))) {
+        Holder connector = new InfluxConnector(influxDb, System.getProperty("influx.host"),
+                System.getProperty("influx.user"), System.getProperty("influx.password"));
+
+        connector.connect();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(log));
+             DataSetController controller = new DataSetController(connector)
+             ) {
             String line;
             while ((line = br.readLine()) != null) {
                 long time = timeParser.parseLine(line);
@@ -86,8 +86,6 @@ public class ParserController {
                 DataSet ds = controller.get(key);
                 dataParser.parseLine(line, ds);
             }
-
         }
-        controller.close();
     }
 }
