@@ -46,6 +46,44 @@
   		<h3><strong>Attention!</strong><br>All requests for stored data are made with UTC time.<br>Requested data will be displayed in your browsers timezone.</h3>
 	</div>
 	<br>
+	<h1>Send log for parsing!</h1>
+
+    <form action="/parse" method="post" enctype="multipart/form-data">
+        <table>
+            <tr>
+                <td>Database name:</td>
+                <td><input type="text" class="form-control" name="db" required></td>
+            </tr>
+            <tr>
+                <td>Log file path:</td>
+                <td><input type="text" class="form-control" name="filepath" required></td>
+            </tr>
+            <tr>
+                <td>Timezone:</td>
+                <td><input type="text" class="form-control" name="timezone" placeholder="GMT"></td>
+            </tr>
+        </table>
+
+        <label>Parsing Mode:
+            <select name="parse_mode">
+                <option value="sdng" selected>sdng</option>
+                <option value="gc">gc</option>
+                <option value="top">top</option>
+            </select>
+        </label>
+        <br>
+        <label>
+            Need Logging:
+            <select name="need_logging">
+                <option value="yes" selected>yes</option>
+                <option value="no">no</option>
+            </select>
+        </label>
+
+        <br>
+        <button type="submit" class="btn btn-success">Parse!</button>
+    </form>
+
     <h1>Client list</h1>
     <table class="table table-striped table-fixed"> <!-- table-bordered  -->
         <thead class="thead-inverse">
