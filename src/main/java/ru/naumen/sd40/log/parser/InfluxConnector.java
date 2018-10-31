@@ -8,12 +8,13 @@ public class InfluxConnector implements Holder {
     private InfluxDAO influxWrapper;
     private  String dbName;
     private BatchPoints points;
+    private boolean needLogging;
 
-    public  InfluxConnector(String dbName, String host, String user, String password) {
+    public  InfluxConnector(String dbName, String host, String user, String password, boolean needLogging) {
         this.dbName = dbName;
         influxWrapper = new InfluxDAO(host, user, password);
         points = null;
-
+        this.needLogging = needLogging;
     }
 
     public void connect() {
@@ -31,7 +32,7 @@ public class InfluxConnector implements Holder {
         ActionDoneParser dones = ds.getActionsDone();
         dones.calculate();
         ErrorParser erros = ds.getErrors();
-        if (System.getProperty("NoCsv") == null) {
+        if (needLogging) {
             System.out.print(String.format("%d;%d;%f;%f;%f;%f;%f;%f;%f;%f;%d\n", key, dones.getCount(),
                     dones.getMin(), dones.getMean(), dones.getStddev(), dones.getPercent50(), dones.getPercent95(),
                     dones.getPercent99(), dones.getPercent999(), dones.getMax(),
