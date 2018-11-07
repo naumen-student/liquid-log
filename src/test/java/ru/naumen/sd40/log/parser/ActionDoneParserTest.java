@@ -9,107 +9,108 @@ public class ActionDoneParserTest {
     @Test
     public void mustParseAddAction() {
         //given
-        ActionDoneParser parser = new ActionDoneParser();
+        SdngDataParser parser = new SdngDataParser();
 
         //when
-        parser.parseLine("Done(10): AddObjectAction", ds);
+        parser.parseActionLine("Done(10): AddObjectAction", ds);
 
         //then
-        Assert.assertEquals(1, parser.getAddObjectActions());
+        Assert.assertEquals(1, ds.getActionStorage().getAddObjectActions());
     }
 
     @Test
     public void mustParseFormActions() {
         //given
-        ActionDoneParser parser = new ActionDoneParser();
+        SdngDataParser parser = new SdngDataParser();
 
         //when
-        parser.parseLine("Done(10): GetFormAction", ds);
-        parser.parseLine("Done(1): GetAddFormContextDataAction", ds);
+        parser.parseActionLine("Done(10): GetFormAction", ds);
+        parser.parseActionLine("Done(1): GetAddFormContextDataAction", ds);
 
         //then
-        Assert.assertEquals(2, parser.getFormActions());
+        Assert.assertEquals(2, ds.getActionStorage().getFormActions());
     }
 
     @Test
     public void mustParseEditObject() {
         //given
-        ActionDoneParser parser=  new ActionDoneParser();
+        SdngDataParser parser =  new SdngDataParser();
 
         //when
-        parser.parseLine("Done(10): EditObjectAction", ds);
+        parser.parseActionLine("Done(10): EditObjectAction", ds);
 
         //then
-        Assert.assertEquals(1, parser.getEditObjectsActions());
+        Assert.assertEquals(1, ds.getActionStorage().getEditObjectsActions());
     }
 
     @Test
     public void mustParseSearchObject(){
         //given
-        ActionDoneParser parser = new ActionDoneParser();
+        SdngDataParser parser =  new SdngDataParser();
 
         //when
-        parser.parseLine("Done(10): GetPossibleAgreementsChildsSearchAction", ds);
-        parser.parseLine("Done(10): TreeSearchAction", ds);
-        parser.parseLine("Done(10): GetSearchResultAction", ds);
-        parser.parseLine("Done(10): GetSimpleSearchResultsAction", ds);
-        parser.parseLine("Done(10): SimpleSearchAction", ds);
-        parser.parseLine("Done(10): ExtendedSearchByStringAction", ds);
-        parser.parseLine("Done(10): ExtendedSearchByFilterAction", ds);
+        parser.parseActionLine("Done(10): GetPossibleAgreementsChildsSearchAction", ds);
+        parser.parseActionLine("Done(10): TreeSearchAction", ds);
+        parser.parseActionLine("Done(10): GetSearchResultAction", ds);
+        parser.parseActionLine("Done(10): GetSimpleSearchResultsAction", ds);
+        parser.parseActionLine("Done(10): SimpleSearchAction", ds);
+        parser.parseActionLine("Done(10): ExtendedSearchByStringAction", ds);
+        parser.parseActionLine("Done(10): ExtendedSearchByFilterAction", ds);
 
         //then
-        Assert.assertEquals(7, parser.getSearchActions());
+        Assert.assertEquals(7, ds.getActionStorage().getSearchActions());
     }
 
     @Test
     public void mustParseGetList(){
         //given:
-        ActionDoneParser parser=  new ActionDoneParser();
+        SdngDataParser parser =  new SdngDataParser();
 
         //when:
-        parser.parseLine("Done(10): GetDtObjectListAction", ds);
-        parser.parseLine("Done(10): GetPossibleCaseListValueAction", ds);
-        parser.parseLine("Done(10): GetPossibleAgreementsTreeListActions", ds);
-        parser.parseLine("Done(10): GetCountForObjectListAction", ds);
-        parser.parseLine("Done(10): GetDataForObjectListAction", ds);
-        parser.parseLine("Done(10): GetPossibleAgreementsListActions", ds);
-        parser.parseLine("Done(10): GetDtObjectForRelObjListAction", ds);
+        parser.parseActionLine("Done(10): GetDtObjectListAction", ds);
+        parser.parseActionLine("Done(10): GetPossibleCaseListValueAction", ds);
+        parser.parseActionLine("Done(10): GetPossibleAgreementsTreeListActions", ds);
+        parser.parseActionLine("Done(10): GetCountForObjectListAction", ds);
+        parser.parseActionLine("Done(10): GetDataForObjectListAction", ds);
+        parser.parseActionLine("Done(10): GetPossibleAgreementsListActions", ds);
+        parser.parseActionLine("Done(10): GetDtObjectForRelObjListAction", ds);
 
         //then:
-        Assert.assertEquals(7, parser.geListActions());
+        Assert.assertEquals(7, ds.getActionStorage().geListActions());
     }
 
     @Test
     public void mustParseComment(){
         //given:
-        ActionDoneParser parser=  new ActionDoneParser();
+        SdngDataParser parser =  new SdngDataParser();
 
         //when:
-        parser.parseLine("Done(10): EditCommentAction", ds);
-        parser.parseLine("Done(10): ChangeResponsibleWithAddCommentAction", ds);
-        parser.parseLine("Done(10): ShowMoreCommentAttrsAction", ds);
-        parser.parseLine("Done(10): CheckObjectsExceedsCommentsAmountAction", ds);
-        parser.parseLine("Done(10): GetAddCommentPermissionAction", ds);
-        parser.parseLine("Done(10): GetCommentDtObjectTemplateAction", ds);
+        parser.parseActionLine("Done(10): EditCommentAction", ds);
+        parser.parseActionLine("Done(10): ChangeResponsibleWithAddCommentAction", ds);
+        parser.parseActionLine("Done(10): ShowMoreCommentAttrsAction", ds);
+        parser.parseActionLine("Done(10): CheckObjectsExceedsCommentsAmountAction", ds);
+        parser.parseActionLine("Done(10): GetAddCommentPermissionAction", ds);
+        parser.parseActionLine("Done(10): GetCommentDtObjectTemplateAction", ds);
 
         //then:
-        Assert.assertEquals(6, parser.getCommentActions());
+        Assert.assertEquals(6, ds.getActionStorage().getCommentActions());
     }
 
     @Test
     public void mustParseDtObject(){
         //given:
-        ActionDoneParser parser=  new ActionDoneParser();
+        SdngDataParser parser =  new SdngDataParser();
+
 
         //when:
-        parser.parseLine("Done(10): GetVisibleDtObjectAction", ds);
-        parser.parseLine("Done(10): GetDtObjectsAction", ds);
-        parser.parseLine("Done(10): GetDtObjectTreeSelectionStateAction", ds);
-        parser.parseLine("Done(10): AbstractGetDtObjectTemplateAction", ds);
-        parser.parseLine("Done(10): GetDtObjectTemplateAction", ds);
+        parser.parseActionLine("Done(10): GetVisibleDtObjectAction", ds);
+        parser.parseActionLine("Done(10): GetDtObjectsAction", ds);
+        parser.parseActionLine("Done(10): GetDtObjectTreeSelectionStateAction", ds);
+        parser.parseActionLine("Done(10): AbstractGetDtObjectTemplateAction", ds);
+        parser.parseActionLine("Done(10): GetDtObjectTemplateAction", ds);
 
         //then:
-        Assert.assertEquals(5, parser.getDtObjectActions());
+        Assert.assertEquals(5, ds.getActionStorage().getDtObjectActions());
     }
 
 }

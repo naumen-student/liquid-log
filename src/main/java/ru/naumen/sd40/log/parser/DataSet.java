@@ -1,41 +1,38 @@
 package ru.naumen.sd40.log.parser;
 
+import ru.naumen.data.ActionStorage;
+import ru.naumen.data.ErrorStorage;
+import ru.naumen.data.GcStorage;
+import ru.naumen.data.TopStorage;
+
 /**
  * Created by doki on 22.10.16.
  */
 public class DataSet
 {
-    private ActionDoneParser actionsDone;
-    private ErrorParser errors;
-    private GcDataParser gc;
-    private TopData cpuData = new TopData();
 
-    public DataSet()
-    {
-        actionsDone = new ActionDoneParser();
-        errors = new ErrorParser();
-        gc = new GcDataParser();
+    private ActionStorage actionStorage = new ActionStorage();
+    private ErrorStorage errorStorage = new ErrorStorage();
+    private GcStorage gcStorage = new GcStorage();
+    private TopStorage topStorage = new TopStorage();
+
+
+
+
+    public ActionStorage getActionStorage() {
+        return actionStorage;
     }
 
-
-
-    public ActionDoneParser getActionsDone()
-    {
-        return actionsDone;
+    public ErrorStorage getErrorStorage() {
+        return errorStorage;
     }
 
-    public ErrorParser getErrors()
-    {
-        return errors;
+    public GcStorage getGcStorage() {
+        return gcStorage;
     }
 
-    public GcDataParser getGc()
-    {
-        return gc;
+    public TopStorage getTopStorage() {
+        return topStorage;
     }
 
-    public TopData cpuData()
-    {
-        return cpuData;
-    }
 }
