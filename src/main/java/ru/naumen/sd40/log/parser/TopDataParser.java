@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 @Component
 public class TopDataParser implements DataParser {
 
-    private Pattern cpuAndMemPattren = Pattern
+    private static final Pattern CPU_AND_MEM_PATTREN = Pattern
             .compile("^ *\\d+ \\S+ +\\S+ +\\S+ +\\S+ +\\S+ +\\S+ +\\S+ \\S+ +(\\S+) +(\\S+) +\\S+ java");
 
     @Override
@@ -23,7 +23,7 @@ public class TopDataParser implements DataParser {
             return;
         }
         //get cpu and mem
-        Matcher cpuAndMemMatcher = cpuAndMemPattren.matcher(line);
+        Matcher cpuAndMemMatcher = CPU_AND_MEM_PATTREN.matcher(line);
         if (cpuAndMemMatcher.find())
         {
             ds.getTopStorage().addCpu(Double.valueOf(cpuAndMemMatcher.group(1)));

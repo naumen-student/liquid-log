@@ -9,13 +9,13 @@ import java.util.regex.Pattern;
 public class GcDataParser implements DataParser {
 
 
-    private Pattern gcExecutionTime = Pattern.compile(".*real=(.*)secs.*");
+    private static final Pattern GC_EXECUTION_TIME = Pattern.compile(".*real=(.*)secs.*");
 
 
     @Override
     public void parseLine(String line, DataSet dataSet)
     {
-        Matcher matcher = gcExecutionTime.matcher(line);
+        Matcher matcher = GC_EXECUTION_TIME.matcher(line);
 
         if (matcher.find())
         {

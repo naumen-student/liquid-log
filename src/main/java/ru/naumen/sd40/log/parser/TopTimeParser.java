@@ -9,7 +9,7 @@ import java.util.TimeZone;
 
 public class TopTimeParser implements TimeParser {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHH:mm");
-    private Pattern timeRegex = Pattern.compile("^_+ (\\S+)");
+    private static final Pattern TIME_REGEX = Pattern.compile("^_+ (\\S+)");
     private String dataDate;
     private long cachedTime;
 
@@ -33,7 +33,7 @@ public class TopTimeParser implements TimeParser {
 
     @Override
     public long parseLine(String line) throws ParseException {
-        Matcher matcher = timeRegex.matcher(line);
+        Matcher matcher = TIME_REGEX.matcher(line);
         if (matcher.find()) {
             cachedTime = sdf.parse(dataDate + matcher.group(1)).getTime();
             return cachedTime;
