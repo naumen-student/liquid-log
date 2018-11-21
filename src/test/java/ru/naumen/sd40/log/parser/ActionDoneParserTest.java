@@ -2,9 +2,10 @@ package ru.naumen.sd40.log.parser;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.naumen.sd40.log.parser.datasetfactory.SdngDataSet;
 
 public class ActionDoneParserTest {
-    private DataSet ds = new DataSet();
+    private SdngDataSet ds = new SdngDataSet();
 
     @Test
     public void mustParseAddAction() {

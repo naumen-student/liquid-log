@@ -1,26 +1,27 @@
 package ru.naumen.sd40.log.parser;
 
 import org.springframework.stereotype.Component;
+import ru.naumen.sd40.log.parser.datasetfactory.GCDataSet;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class GcDataParser implements DataParser {
+public class GcDataParser implements DataParser<GCDataSet> {
 
 
     private static final Pattern GC_EXECUTION_TIME = Pattern.compile(".*real=(.*)secs.*");
 
 
     @Override
-    public void parseLine(String line, DataSet dataSet)
+    public void parseLine(String line, GCDataSet dataSet)
     {
         Matcher matcher = GC_EXECUTION_TIME.matcher(line);
 
         if (matcher.find())
         {
             double val = Double.parseDouble(matcher.group(1).trim().replace(',', '.'));
-            dataSet.getGcStorage().addValue(val);
+            dataSet.getStorage().addValue(val);
         }
     }
 

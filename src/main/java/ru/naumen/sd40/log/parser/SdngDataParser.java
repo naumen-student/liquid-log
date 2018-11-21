@@ -3,6 +3,7 @@ package ru.naumen.sd40.log.parser;
 import org.springframework.stereotype.Component;
 import ru.naumen.data.ActionStorage;
 import ru.naumen.data.ErrorStorage;
+import ru.naumen.sd40.log.parser.datasetfactory.SdngDataSet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class SdngDataParser implements DataParser {
+public class SdngDataParser implements DataParser<SdngDataSet> {
 
     private static final Pattern WARN_REG_EX = Pattern.compile("^\\d+ \\[.+?\\] \\(.+?\\) WARN");
     private static final Pattern ERROR_REG_EX = Pattern.compile("^\\d+ \\[.+?\\] \\(.+?\\) ERROR");
@@ -26,12 +27,12 @@ public class SdngDataParser implements DataParser {
 
 
     @Override
-    public void parseLine(String line, DataSet ds) {
+    public void parseLine(String line, SdngDataSet ds) {
         parseActionLine(line, ds);
         parseErrorLine(line, ds);
     }
 
-    public void parseActionLine(String line, DataSet ds) {
+    public void parseActionLine(String line, SdngDataSet ds) {
         ActionStorage storage = ds.getActionStorage();
         Matcher matcher = DONE_REG_EX.matcher(line);
 
@@ -64,7 +65,7 @@ public class SdngDataParser implements DataParser {
         }
     }
 
-    public void parseErrorLine(String line, DataSet ds) {
+    public void parseErrorLine(String line, SdngDataSet ds) {
         ErrorStorage storage = ds.getErrorStorage();
 
         if (WARN_REG_EX.matcher(line).find())
