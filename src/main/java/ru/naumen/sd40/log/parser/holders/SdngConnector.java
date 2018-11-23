@@ -1,8 +1,8 @@
 package ru.naumen.sd40.log.parser.holders;
 
-import ru.naumen.data.ActionStorage;
-import ru.naumen.data.ErrorStorage;
 import ru.naumen.sd40.log.parser.Parameters;
+import ru.naumen.sd40.log.parser.datasetfactory.ActionDataSet;
+import ru.naumen.sd40.log.parser.datasetfactory.ErrorDataSet;
 import ru.naumen.sd40.log.parser.datasetfactory.SdngDataSet;
 
 public class SdngConnector extends Holder<SdngDataSet> {
@@ -12,9 +12,9 @@ public class SdngConnector extends Holder<SdngDataSet> {
 
     @Override
     public void store(long key, SdngDataSet ds) {
-        ActionStorage dones = ds.getActionStorage();
+        ActionDataSet dones = ds.getActionDataSet();
         dones.calculate();
-        ErrorStorage errors = ds.getErrorStorage();
+        ErrorDataSet errors = ds.getErrorDataSet();
         if (needLogging)
         {
             System.out.print(String.format("%d;%d;%f;%f;%f;%f;%f;%f;%f;%f;%d\n", key, dones.getCount(),

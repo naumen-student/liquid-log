@@ -1,22 +1,20 @@
 package ru.naumen.sd40.log.parser.datasetfactory;
 
-import ru.naumen.data.ActionStorage;
-import ru.naumen.data.ErrorStorage;
 
 public class SdngDataSet implements DataSet {
-    private ActionStorage actionStorage;
-    private ErrorStorage errorStorage;
+    private ActionDataSet actionDataSet;
+    private ErrorDataSet errorDataSet;
 
     public SdngDataSet() {
-        actionStorage = new ActionStorage();
-        errorStorage = new ErrorStorage();
+        actionDataSet = new ActionDataSet();
+        errorDataSet = new ErrorDataSet();
     }
 
-    public ActionStorage getActionStorage() {
-        return actionStorage;
+    public ActionDataSet getActionDataSet() {
+        return actionDataSet;
     }
 
-    public ErrorStorage getErrorStorage() {
-        return errorStorage;
+    public ErrorDataSet getErrorDataSet() {
+        return errorDataSet;
     }
 }

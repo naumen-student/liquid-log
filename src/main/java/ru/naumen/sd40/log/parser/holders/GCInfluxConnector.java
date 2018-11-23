@@ -1,6 +1,5 @@
 package ru.naumen.sd40.log.parser.holders;
 
-import ru.naumen.data.GcStorage;
 import ru.naumen.sd40.log.parser.Parameters;
 import ru.naumen.sd40.log.parser.datasetfactory.GCDataSet;
 
@@ -12,11 +11,9 @@ public class GCInfluxConnector extends Holder<GCDataSet> {
 
     @Override
     public void store(long key, GCDataSet ds) {
-        GcStorage storage = ds.getStorage();
-
-        if (!storage.isNan())
+        if (!ds.isNan())
         {
-            influxWrapper.storeGc(points, dbName, key, storage);
+            influxWrapper.storeGc(points, dbName, key, ds);
         }
     }
 }

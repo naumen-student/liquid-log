@@ -20,15 +20,15 @@ public class TopDataParser implements DataParser<TopDataSet> {
         Matcher la = Pattern.compile(".*load average:(.*)").matcher(line);
         if (la.find())
         {
-            ds.getStorage().addLa(Double.parseDouble(la.group(1).split(",")[0].trim()));
+            ds.addLa(Double.parseDouble(la.group(1).split(",")[0].trim()));
             return;
         }
         //get cpu and mem
         Matcher cpuAndMemMatcher = CPU_AND_MEM_PATTREN.matcher(line);
         if (cpuAndMemMatcher.find())
         {
-            ds.getStorage().addCpu(Double.valueOf(cpuAndMemMatcher.group(1)));
-            ds.getStorage().addMem(Double.valueOf(cpuAndMemMatcher.group(2)));
+            ds.addCpu(Double.valueOf(cpuAndMemMatcher.group(1)));
+            ds.addMem(Double.valueOf(cpuAndMemMatcher.group(2)));
         }
     }
 }

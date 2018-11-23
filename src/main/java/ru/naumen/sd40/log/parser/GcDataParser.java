@@ -21,7 +21,7 @@ public class GcDataParser implements DataParser<GCDataSet> {
         if (matcher.find())
         {
             double val = Double.parseDouble(matcher.group(1).trim().replace(',', '.'));
-            dataSet.getStorage().addValue(val);
+            dataSet.addValue(val);
         }
     }
 

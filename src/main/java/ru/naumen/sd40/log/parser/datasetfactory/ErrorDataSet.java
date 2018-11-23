@@ -1,7 +1,6 @@
-package ru.naumen.data;
+package ru.naumen.sd40.log.parser.datasetfactory;
 
-public class ErrorStorage implements DataStorage {
-
+public class ErrorDataSet implements DataSet {
     private long warnCount;
     private long errorCount;
     private long fatalCount;
