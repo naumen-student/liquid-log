@@ -1,8 +1,9 @@
 package ru.naumen.sd40.log.parser;
 
 import org.springframework.stereotype.Component;
-import ru.naumen.data.ActionStorage;
-import ru.naumen.data.ErrorStorage;
+import ru.naumen.sd40.log.parser.datasetfactory.ActionDataSet;
+import ru.naumen.sd40.log.parser.datasetfactory.ErrorDataSet;
+import ru.naumen.sd40.log.parser.datasetfactory.SdngDataSet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class SdngDataParser implements DataParser {
+public class SdngDataParser implements DataParser<SdngDataSet> {
 
     private static final Pattern WARN_REG_EX = Pattern.compile("^\\d+ \\[.+?\\] \\(.+?\\) WARN");
     private static final Pattern ERROR_REG_EX = Pattern.compile("^\\d+ \\[.+?\\] \\(.+?\\) ERROR");
@@ -26,13 +27,13 @@ public class SdngDataParser implements DataParser {
 
 
     @Override
-    public void parseLine(String line, DataSet ds) {
+    public void parseLine(String line, SdngDataSet ds) {
         parseActionLine(line, ds);
         parseErrorLine(line, ds);
     }
 
-    public void parseActionLine(String line, DataSet ds) {
-        ActionStorage storage = ds.getActionStorage();
+    public void parseActionLine(String line, SdngDataSet ds) {
+        ActionDataSet dataSet = ds.getActionDataSet();
         Matcher matcher = DONE_REG_EX.matcher(line);
 
         if (matcher.find()) {
@@ -41,43 +42,43 @@ public class SdngDataParser implements DataParser {
                 return;
             }
 
-            storage.getTimes().add(Integer.parseInt(matcher.group(1)));
+            dataSet.getTimes().add(Integer.parseInt(matcher.group(1)));
             if (actionInLowerCase.equals("addobjectaction")) {
-                storage.incrementAddObjectActions();
+                dataSet.incrementAddObjectActions();
             } else if (actionInLowerCase.equals("editobjectaction")) {
-                storage.incrementEditObjectActions();
+                dataSet.incrementEditObjectActions();
             } else if (actionInLowerCase.equals("getcatalogsaction")) {
-                storage.incrementCatalogsActions();
+                dataSet.incrementCatalogsActions();
             } else if (actionInLowerCase.matches("(?i)[a-zA-Z]+comment[a-zA-Z]+")) {
-                storage.incrementCommentActions();
+                dataSet.incrementCommentActions();
             } else if (!actionInLowerCase.contains("advlist")
                     && actionInLowerCase.matches("(?i)^([a-zA-Z]+|Get)[a-zA-Z]+List[a-zA-Z]+")) {
-                storage.incrementListActions();
+                dataSet.incrementListActions();
             } else if (actionInLowerCase.matches("(?i)^([a-zA-Z]+|Get)[a-zA-Z]+Form[a-zA-Z]+")) {
-                storage.incrementFormActions();
+                dataSet.incrementFormActions();
             } else if (actionInLowerCase.matches("(?i)^([a-zA-Z]+|Get)[a-zA-Z]+DtObject[a-zA-Z]+")) {
-                storage.increaseObjectActions();
+                dataSet.increaseObjectActions();
             } else if (actionInLowerCase.matches("(?i)[a-zA-Z]+search[a-zA-Z]+")) {
-                storage.incrementSearchActions();
+                dataSet.incrementSearchActions();
             }
 
         }
     }
 
-    public void parseErrorLine(String line, DataSet ds) {
-        ErrorStorage storage = ds.getErrorStorage();
+    public void parseErrorLine(String line, SdngDataSet ds) {
+        ErrorDataSet dataSet = ds.getErrorDataSet();
 
         if (WARN_REG_EX.matcher(line).find())
         {
-            storage.incrementWarnCount();
+            dataSet.incrementWarnCount();
         }
         if (ERROR_REG_EX.matcher(line).find())
         {
-            storage.incrementErrorCount();
+            dataSet.incrementErrorCount();
         }
         if (FATAL_REG_EX.matcher(line).find())
         {
-            storage.incrementFatalCount();
+            dataSet.incrementFatalCount();
         }
     }
 }

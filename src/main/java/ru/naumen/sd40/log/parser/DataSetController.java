@@ -1,19 +1,26 @@
 package ru.naumen.sd40.log.parser;
 
+import ru.naumen.sd40.log.parser.datasetfactory.DataSet;
+import ru.naumen.sd40.log.parser.datasetfactory.DataSetFactory;
+import ru.naumen.sd40.log.parser.holders.Holder;
+
 import java.security.InvalidParameterException;
 
-public class DataSetController implements AutoCloseable {
+public class DataSetController<I extends DataSet> implements AutoCloseable {
 
-    private Holder connector;
+    private I currentDataSet;
+    private Holder<I> connector;
+    private DataSetFactory<I> factory;
+
     private long currentKey = -1;
-    private DataSet currentDataSet;
 
-    public DataSetController(Holder connector) {
+    public DataSetController(Holder<I> connector, DataSetFactory<I> factory) {
 
         this.connector = connector;
+        this.factory = factory;
     }
 
-    public DataSet get(long key) throws InvalidParameterException {
+    public I get(long key) throws InvalidParameterException {
         if (key == currentKey) {
             return currentDataSet;
         }
@@ -23,7 +30,7 @@ public class DataSetController implements AutoCloseable {
                 connector.store(currentKey, currentDataSet);
             }
             currentKey = key;
-            currentDataSet = new DataSet();
+            currentDataSet = factory.create();
             return currentDataSet;
         }
         throw new InvalidParameterException(String.format("Given key: %d is already stored", key));

@@ -1,5 +1,11 @@
 package ru.naumen.sd40.log.parser;
 
+import ru.naumen.sd40.log.parser.datasetcontrollerfactory.DataSetControllerFactory;
+import ru.naumen.sd40.log.parser.datasetcontrollerfactory.GCControllerdataSetFactory;
+import ru.naumen.sd40.log.parser.datasetcontrollerfactory.SdngControllerDataSetFactory;
+import ru.naumen.sd40.log.parser.datasetcontrollerfactory.TopControllerDataSetFactory;
+import ru.naumen.sd40.log.parser.datasetfactory.DataSet;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,18 +16,21 @@ public class ParseBuilder {
 
     private TimeParser timeParser;
     private DataParser dataParser;
-    private Holder connector;
+
 
     private String fileName;
+    private DataSetControllerFactory factory;
+    private Parameters parameters;
+    private DataSetController controller;
 
     public ParseBuilder() {
 
     }
 
     public ParseBuilder setDbConnection(String db, boolean needLogging) {
-        connector = new InfluxConnector(db, System.getProperty("influx.host"),
+        this.parameters = new Parameters(db, System.getProperty("influx.host"),
                 System.getProperty("influx.user"), System.getProperty("influx.password"), needLogging);
-        connector.connect();
+
         return this;
     }
 
@@ -31,19 +40,24 @@ public class ParseBuilder {
             case "sdng":
                 timeParser = new SdngTimeParser();
                 dataParser = new SdngDataParser();
+                factory = new SdngControllerDataSetFactory();
+
                 break;
             case "gc":
                 timeParser = new GcTimeParser();
                 dataParser = new GcDataParser();
+                factory = new GCControllerdataSetFactory();
                 break;
             case "top":
                 timeParser = new TopTimeParser(file);
                 dataParser = new TopDataParser();
+                factory = new TopControllerDataSetFactory();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown parse mode!");
 
         }
+        controller = factory.create(parameters);
         fileName = file;
         timeParser.configureTimeZone(timeZone);
         return this;
@@ -52,14 +66,13 @@ public class ParseBuilder {
 
 
     public void parse() throws DBCloseException, IOException, ParseException {
-        if (connector == null)
+        if (controller == null)
             throw new IllegalStateException("DB connection not set");
         if (timeParser == null)
             throw  new IllegalStateException("Parsers are not set");
 
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName));
-             DataSetController controller = new DataSetController(connector)
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))
         ) {
             String line;
             while ((line = br.readLine()) != null) {

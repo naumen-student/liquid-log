@@ -2,9 +2,10 @@ package ru.naumen.sd40.log.parser;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.naumen.sd40.log.parser.datasetfactory.SdngDataSet;
 
 public class ActionDoneParserTest {
-    private DataSet ds = new DataSet();
+    private SdngDataSet ds = new SdngDataSet();
 
     @Test
     public void mustParseAddAction() {
@@ -15,7 +16,7 @@ public class ActionDoneParserTest {
         parser.parseActionLine("Done(10): AddObjectAction", ds);
 
         //then
-        Assert.assertEquals(1, ds.getActionStorage().getAddObjectActions());
+        Assert.assertEquals(1, ds.getActionDataSet().getAddObjectActions());
     }
 
     @Test
@@ -28,7 +29,7 @@ public class ActionDoneParserTest {
         parser.parseActionLine("Done(1): GetAddFormContextDataAction", ds);
 
         //then
-        Assert.assertEquals(2, ds.getActionStorage().getFormActions());
+        Assert.assertEquals(2, ds.getActionDataSet().getFormActions());
     }
 
     @Test
@@ -40,7 +41,7 @@ public class ActionDoneParserTest {
         parser.parseActionLine("Done(10): EditObjectAction", ds);
 
         //then
-        Assert.assertEquals(1, ds.getActionStorage().getEditObjectsActions());
+        Assert.assertEquals(1, ds.getActionDataSet().getEditObjectsActions());
     }
 
     @Test
@@ -58,7 +59,7 @@ public class ActionDoneParserTest {
         parser.parseActionLine("Done(10): ExtendedSearchByFilterAction", ds);
 
         //then
-        Assert.assertEquals(7, ds.getActionStorage().getSearchActions());
+        Assert.assertEquals(7, ds.getActionDataSet().getSearchActions());
     }
 
     @Test
@@ -76,7 +77,7 @@ public class ActionDoneParserTest {
         parser.parseActionLine("Done(10): GetDtObjectForRelObjListAction", ds);
 
         //then:
-        Assert.assertEquals(7, ds.getActionStorage().geListActions());
+        Assert.assertEquals(7, ds.getActionDataSet().geListActions());
     }
 
     @Test
@@ -93,7 +94,7 @@ public class ActionDoneParserTest {
         parser.parseActionLine("Done(10): GetCommentDtObjectTemplateAction", ds);
 
         //then:
-        Assert.assertEquals(6, ds.getActionStorage().getCommentActions());
+        Assert.assertEquals(6, ds.getActionDataSet().getCommentActions());
     }
 
     @Test
@@ -110,7 +111,7 @@ public class ActionDoneParserTest {
         parser.parseActionLine("Done(10): GetDtObjectTemplateAction", ds);
 
         //then:
-        Assert.assertEquals(5, ds.getActionStorage().getDtObjectActions());
+        Assert.assertEquals(5, ds.getActionDataSet().getDtObjectActions());
     }
 
 }

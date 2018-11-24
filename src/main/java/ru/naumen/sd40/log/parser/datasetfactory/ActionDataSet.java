@@ -1,11 +1,11 @@
-package ru.naumen.data;
+package ru.naumen.sd40.log.parser.datasetfactory;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class ActionStorage implements DataStorage {
+public class ActionDataSet implements DataSet {
     private ArrayList<Integer> times = new ArrayList<>();
     private double min;
     private double mean;

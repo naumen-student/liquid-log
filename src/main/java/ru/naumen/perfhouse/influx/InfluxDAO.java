@@ -38,12 +38,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import ru.naumen.data.ActionStorage;
-import ru.naumen.data.ErrorStorage;
-import ru.naumen.data.GcStorage;
-import ru.naumen.data.TopStorage;
 import ru.naumen.perfhouse.statdata.Constants;
-import ru.naumen.sd40.log.parser.*;
+import ru.naumen.sd40.log.parser.datasetfactory.ActionDataSet;
+import ru.naumen.sd40.log.parser.datasetfactory.ErrorDataSet;
+import ru.naumen.sd40.log.parser.datasetfactory.GCDataSet;
+import ru.naumen.sd40.log.parser.datasetfactory.TopDataSet;
 
 /**
  * Created by doki on 24.10.16.
@@ -108,29 +107,29 @@ public class InfluxDAO
         return BatchPoints.database(dbName).build();
     }
 
-    public void storeActionsFromLog(BatchPoints batch, String dbName, long date, ActionStorage actionStorage,
-            ErrorStorage errorStorage)
+    public void storeActionsFromLog(BatchPoints batch, String dbName, long date, ActionDataSet actionDataSet,
+                                    ErrorDataSet errorDataSet)
     {
         //@formatter:off
         Builder builder = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
-                .addField(COUNT, actionStorage.getCount())
-                .addField("min", actionStorage.getMin())
-                .addField(MEAN, actionStorage.getMean())
-                .addField(STDDEV, actionStorage.getStddev())
-                .addField(PERCENTILE50, actionStorage.getPercent50())
-                .addField(PERCENTILE95, actionStorage.getPercent95())
-                .addField(PERCENTILE99, actionStorage.getPercent99())
-                .addField(PERCENTILE999, actionStorage.getPercent999())
-                .addField(MAX, actionStorage.getMax())
-                .addField(ERRORS, errorStorage.getErrorCount())
-                .addField(ADD_ACTIONS, actionStorage.getAddObjectActions())
-                .addField(EDIT_ACTIONS, actionStorage.getEditObjectsActions())
-                .addField(LIST_ACTIONS, actionStorage.geListActions())
-                .addField(COMMENT_ACTIONS, actionStorage.getCommentActions())
-                .addField(GET_FORM_ACTIONS, actionStorage.getFormActions())
-                .addField(GET_DT_OBJECT_ACTIONS, actionStorage.getDtObjectActions())
-                .addField(SEARCH_ACTIONS, actionStorage.getSearchActions())
-                .addField(GET_CATALOGS_ACTION, actionStorage.getGetCatalogsActions());
+                .addField(COUNT, actionDataSet.getCount())
+                .addField("min", actionDataSet.getMin())
+                .addField(MEAN, actionDataSet.getMean())
+                .addField(STDDEV, actionDataSet.getStddev())
+                .addField(PERCENTILE50, actionDataSet.getPercent50())
+                .addField(PERCENTILE95, actionDataSet.getPercent95())
+                .addField(PERCENTILE99, actionDataSet.getPercent99())
+                .addField(PERCENTILE999, actionDataSet.getPercent999())
+                .addField(MAX, actionDataSet.getMax())
+                .addField(ERRORS, errorDataSet.getErrorCount())
+                .addField(ADD_ACTIONS, actionDataSet.getAddObjectActions())
+                .addField(EDIT_ACTIONS, actionDataSet.getEditObjectsActions())
+                .addField(LIST_ACTIONS, actionDataSet.geListActions())
+                .addField(COMMENT_ACTIONS, actionDataSet.getCommentActions())
+                .addField(GET_FORM_ACTIONS, actionDataSet.getFormActions())
+                .addField(GET_DT_OBJECT_ACTIONS, actionDataSet.getDtObjectActions())
+                .addField(SEARCH_ACTIONS, actionDataSet.getSearchActions())
+                .addField(GET_CATALOGS_ACTION, actionDataSet.getGetCatalogsActions());
 
 
         //@formatter:on
@@ -177,11 +176,11 @@ public class InfluxDAO
         }
     }
 
-    public void storeGc(BatchPoints batch, String dbName, long date, GcStorage gcStorage)
+    public void storeGc(BatchPoints batch, String dbName, long date, GCDataSet gcDataSet)
     {
         Point point = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
-                .addField(GCTIMES, gcStorage.getGcTimes()).addField(AVARAGE_GC_TIME, gcStorage.getCalculatedAvg())
-                .addField(MAX_GC_TIME, gcStorage.getMaxGcTime()).build();
+                .addField(GCTIMES, gcDataSet.getGcTimes()).addField(AVARAGE_GC_TIME, gcDataSet.getCalculatedAvg())
+                .addField(MAX_GC_TIME, gcDataSet.getMaxGcTime()).build();
 
         if (batch != null)
         {
@@ -193,7 +192,7 @@ public class InfluxDAO
         }
     }
 
-    public void storeTop(BatchPoints batch, String dbName, long date, TopStorage data)
+    public void storeTop(BatchPoints batch, String dbName, long date, TopDataSet data)
     {
         Point point = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
                 .addField(AVG_LA, data.getAvgLa()).addField(AVG_CPU, data.getAvgCpuUsage())
