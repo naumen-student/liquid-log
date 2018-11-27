@@ -5,6 +5,14 @@ import ru.naumen.sd40.log.parser.datasetcontrollerfactory.GCControllerdataSetFac
 import ru.naumen.sd40.log.parser.datasetcontrollerfactory.SdngControllerDataSetFactory;
 import ru.naumen.sd40.log.parser.datasetcontrollerfactory.TopControllerDataSetFactory;
 import ru.naumen.sd40.log.parser.datasetfactory.DataSet;
+import ru.naumen.sd40.log.parser.timeparserfactory.GcTimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparserfactory.SdngTimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparserfactory.TimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparserfactory.TopTimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparsers.GcTimeParser;
+import ru.naumen.sd40.log.parser.timeparsers.SdngTimeParser;
+import ru.naumen.sd40.log.parser.timeparsers.TimeParser;
+import ru.naumen.sd40.log.parser.timeparsers.TopTimeParser;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,14 +22,12 @@ import java.text.ParseException;
 
 public class ParseBuilder {
 
-    private TimeParser timeParser;
+
     private DataParser dataParser;
 
-
-    private String fileName;
     private DataSetControllerFactory factory;
+    private TimeParserFactory timeParserFactory;
     private Parameters parameters;
-    private DataSetController controller;
 
     public ParseBuilder() {
 
@@ -34,45 +40,46 @@ public class ParseBuilder {
         return this;
     }
 
-    public ParseBuilder setParseMode(String mode, String file, String timeZone) {
+    public ParseBuilder setParseMode(String mode) {
 
         switch (mode) {
             case "sdng":
-                timeParser = new SdngTimeParser();
                 dataParser = new SdngDataParser();
                 factory = new SdngControllerDataSetFactory();
+                timeParserFactory = new SdngTimeParserFactory();
 
                 break;
             case "gc":
-                timeParser = new GcTimeParser();
                 dataParser = new GcDataParser();
                 factory = new GCControllerdataSetFactory();
+                timeParserFactory = new GcTimeParserFactory();
                 break;
             case "top":
-                timeParser = new TopTimeParser(file);
                 dataParser = new TopDataParser();
                 factory = new TopControllerDataSetFactory();
+                timeParserFactory = new TopTimeParserFactory();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown parse mode!");
 
         }
-        controller = factory.create(parameters);
-        fileName = file;
-        timeParser.configureTimeZone(timeZone);
+
         return this;
     }
 
 
 
-    public void parse() throws DBCloseException, IOException, ParseException {
-        if (controller == null)
+    public void parse(String file, String timeZone) throws DBCloseException, IOException, ParseException {
+        if (factory == null)
             throw new IllegalStateException("DB connection not set");
-        if (timeParser == null)
+        if (timeParserFactory == null)
             throw  new IllegalStateException("Parsers are not set");
 
+        TimeParser timeParser = timeParserFactory.create(file);
+        timeParser.configureTimeZone(timeZone);
+        DataSetController controller = factory.create(parameters);
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))
+        try (BufferedReader br = new BufferedReader(new FileReader(file))
         ) {
             String line;
             while ((line = br.readLine()) != null) {

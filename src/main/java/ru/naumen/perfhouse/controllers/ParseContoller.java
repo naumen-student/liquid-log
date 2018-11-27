@@ -26,8 +26,8 @@ public class ParseContoller {
 
         new ParseBuilder()
                 .setDbConnection(db, needLogging.equals("yes"))
-                .setParseMode(mode, filePath, timeZone)
-                .parse();
+                .setParseMode(mode)
+                .parse(filePath, timeZone);
 
         return new ResponseEntity<>("Parsing is done", HttpStatus.OK);
 
