@@ -6,5 +6,7 @@ public interface TimeParser {
 
     void configureTimeZone(String timeZone);
 
+    void setFileName(String fileName);
+
     long parseLine(String line) throws ParseException;
 }

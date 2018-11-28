@@ -25,6 +25,11 @@ public class GcTimeParser implements TimeParser {
     }
 
     @Override
+    public void setFileName(String fileName) {
+        return;
+    }
+
+    @Override
     public long parseLine(String line) throws ParseException
     {
         Matcher matcher = PATTERN.matcher(line);

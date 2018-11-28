@@ -35,6 +35,11 @@ public class SdngTimeParser implements TimeParser
     }
 
     @Override
+    public void setFileName(String fileName) {
+        return;
+    }
+
+    @Override
     public long parseLine(String line) throws ParseException {
         Matcher matcher = TIME_PATTERN.matcher(line);
         if (matcher.find())

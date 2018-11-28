@@ -1,5 +1,6 @@
 package ru.naumen.perfhouse.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,9 @@ import java.text.ParseException;
 @Controller
 public class ParseContoller {
 
+    @Autowired
+    ParseBuilder builder;
+
     @RequestMapping(path = "/parse", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity parse(@RequestParam(name = "db") String db,
@@ -24,10 +28,7 @@ public class ParseContoller {
                                 @RequestParam(name = "timezone") String timeZone,
                                 @RequestParam(name = "need_logging") String needLogging) throws ParseException, DBCloseException, IOException {
 
-        new ParseBuilder()
-                .setDbConnection(db, needLogging.equals("yes"))
-                .setParseMode(mode)
-                .parse(filePath, timeZone);
+        builder.setDbConnection(db, needLogging.equals("yes")).parse(mode, filePath, timeZone);
 
         return new ResponseEntity<>("Parsing is done", HttpStatus.OK);
 
