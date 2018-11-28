@@ -28,7 +28,7 @@ public class ParseContoller {
                                 @RequestParam(name = "timezone") String timeZone,
                                 @RequestParam(name = "need_logging") String needLogging) throws ParseException, DBCloseException, IOException {
 
-        builder.setDbConnection(db, needLogging.equals("yes")).parse(mode, filePath, timeZone);
+        builder.parse(mode, filePath, timeZone, db, needLogging.equals("yes"));
 
         return new ResponseEntity<>("Parsing is done", HttpStatus.OK);
 

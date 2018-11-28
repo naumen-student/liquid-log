@@ -34,7 +34,6 @@ public class ParseBuilder {
     private GcTimeParserFactory gcTimeParserFactory;
     private TopTimeParserFactory topTimeParserFactory;
 
-    private Parameters parameters;
 
     @Autowired
     public ParseBuilder(SdngDataParser sdngDataParser,
@@ -60,16 +59,12 @@ public class ParseBuilder {
         this.topTimeParserFactory = topTimeParserFactory;
     }
 
-    public ParseBuilder setDbConnection(String db, boolean needLogging) {
-        this.parameters = new Parameters(db, System.getProperty("influx.host"),
+
+    public void parse(String mode, String file, String timeZone, String db, boolean needLogging) throws DBCloseException, IOException, ParseException {
+
+        Parameters params = new Parameters(db, System.getProperty("influx.host"),
                 System.getProperty("influx.user"), System.getProperty("influx.password"), needLogging);
 
-        return this;
-    }
-
-
-
-    public void parse(String mode, String file, String timeZone) throws DBCloseException, IOException, ParseException {
         DataParser parser;
         DataSetControllerFactory factory;
         TimeParserFactory timeParserFactory;
@@ -100,7 +95,7 @@ public class ParseBuilder {
         timeParser.configureTimeZone(timeZone);
         timeParser.setFileName(file);
 
-        DataSetController controller = factory.create(parameters);
+        DataSetController controller = factory.create(params);
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))
         ) {
