@@ -1,4 +1,4 @@
-package ru.naumen.sd40.log.parser;
+package ru.naumen.sd40.log.parser.timeparsers;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,15 +13,7 @@ public class TopTimeParser implements TimeParser {
     private String dataDate;
     private long cachedTime;
 
-    public TopTimeParser(String log) throws IllegalArgumentException {
-        
-        //Supports these masks in file name: YYYYmmdd, YYY-mm-dd i.e. 20161101, 2016-11-01
-        Matcher matcher = Pattern.compile("\\d{8}|\\d{4}-\\d{2}-\\d{2}").matcher(log);
-        if (!matcher.find())
-        {
-            throw new IllegalArgumentException();
-        }
-        this.dataDate = matcher.group(0).replaceAll("-", "");
+    public TopTimeParser() throws IllegalArgumentException {
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
     }
@@ -29,6 +21,18 @@ public class TopTimeParser implements TimeParser {
     @Override
     public void configureTimeZone(String timeZone) {
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+    }
+
+    @Override
+    public void setFileName(String fileName) {
+
+        //Supports these masks in file name: YYYYmmdd, YYY-mm-dd i.e. 20161101, 2016-11-01
+        Matcher matcher = Pattern.compile("\\d{8}|\\d{4}-\\d{2}-\\d{2}").matcher(fileName);
+        if (!matcher.find())
+        {
+            throw new IllegalArgumentException();
+        }
+        this.dataDate = matcher.group(0).replaceAll("-", "");
     }
 
     @Override

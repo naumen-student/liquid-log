@@ -1,4 +1,4 @@
-package ru.naumen.sd40.log.parser;
+package ru.naumen.sd40.log.parser.timeparsers;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,6 +22,11 @@ public class GcTimeParser implements TimeParser {
     @Override
     public void configureTimeZone(String timeZone) {
         DATE_FORMAT.setTimeZone(TimeZone.getTimeZone(timeZone));
+    }
+
+    @Override
+    public void setFileName(String fileName) {
+        return;
     }
 
     @Override

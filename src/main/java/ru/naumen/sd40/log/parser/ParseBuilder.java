@@ -1,78 +1,103 @@
 package ru.naumen.sd40.log.parser;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ru.naumen.sd40.log.parser.datasetcontrollerfactory.DataSetControllerFactory;
 import ru.naumen.sd40.log.parser.datasetcontrollerfactory.GCControllerdataSetFactory;
 import ru.naumen.sd40.log.parser.datasetcontrollerfactory.SdngControllerDataSetFactory;
 import ru.naumen.sd40.log.parser.datasetcontrollerfactory.TopControllerDataSetFactory;
 import ru.naumen.sd40.log.parser.datasetfactory.DataSet;
+import ru.naumen.sd40.log.parser.timeparserfactory.GcTimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparserfactory.SdngTimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparserfactory.TimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparserfactory.TopTimeParserFactory;
+import ru.naumen.sd40.log.parser.timeparsers.TimeParser;
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 
-
+@Component
 public class ParseBuilder {
 
-    private TimeParser timeParser;
-    private DataParser dataParser;
+    private SdngDataParser sdngDataParser;
+    private GcDataParser gcDataParser;
+    private TopDataParser topDataParser;
+
+    private SdngControllerDataSetFactory sdngFactory;
+    private GCControllerdataSetFactory gcFactory;
+    private TopControllerDataSetFactory topFactory;
+
+    private SdngTimeParserFactory sdngTimeParserFactory;
+    private GcTimeParserFactory gcTimeParserFactory;
+    private TopTimeParserFactory topTimeParserFactory;
 
 
-    private String fileName;
-    private DataSetControllerFactory factory;
-    private Parameters parameters;
-    private DataSetController controller;
+    @Autowired
+    public ParseBuilder(SdngDataParser sdngDataParser,
+                        GcDataParser gcDataParser,
+                        TopDataParser topDataParser,
+                        SdngControllerDataSetFactory sdngFactory,
+                        GCControllerdataSetFactory gcFactory,
+                        TopControllerDataSetFactory topFactory,
+                        SdngTimeParserFactory sdngTimeParserFactory,
+                        GcTimeParserFactory gcTimeParserFactory,
+                        TopTimeParserFactory topTimeParserFactory) {
 
-    public ParseBuilder() {
+        this.sdngDataParser = sdngDataParser;
+        this.gcDataParser = gcDataParser;
+        this.topDataParser = topDataParser;
 
+        this.sdngFactory = sdngFactory;
+        this.gcFactory = gcFactory;
+        this.topFactory = topFactory;
+
+        this.sdngTimeParserFactory = sdngTimeParserFactory;
+        this.gcTimeParserFactory = gcTimeParserFactory;
+        this.topTimeParserFactory = topTimeParserFactory;
     }
 
-    public ParseBuilder setDbConnection(String db, boolean needLogging) {
-        this.parameters = new Parameters(db, System.getProperty("influx.host"),
+
+    public void parse(String mode, String file, String timeZone, String db, boolean needLogging) throws DBCloseException, IOException, ParseException {
+
+        Parameters params = new Parameters(db, System.getProperty("influx.host"),
                 System.getProperty("influx.user"), System.getProperty("influx.password"), needLogging);
 
-        return this;
-    }
-
-    public ParseBuilder setParseMode(String mode, String file, String timeZone) {
-
+        DataParser parser;
+        DataSetControllerFactory factory;
+        TimeParserFactory timeParserFactory;
         switch (mode) {
             case "sdng":
-                timeParser = new SdngTimeParser();
-                dataParser = new SdngDataParser();
-                factory = new SdngControllerDataSetFactory();
+                parser = sdngDataParser;
+                factory = sdngFactory;
+                timeParserFactory = sdngTimeParserFactory;
 
                 break;
             case "gc":
-                timeParser = new GcTimeParser();
-                dataParser = new GcDataParser();
-                factory = new GCControllerdataSetFactory();
+                parser = gcDataParser;
+                factory = gcFactory;
+                timeParserFactory = gcTimeParserFactory;
                 break;
             case "top":
-                timeParser = new TopTimeParser(file);
-                dataParser = new TopDataParser();
-                factory = new TopControllerDataSetFactory();
+                parser = topDataParser;
+                factory = topFactory;
+                timeParserFactory = topTimeParserFactory;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown parse mode!");
 
         }
-        controller = factory.create(parameters);
-        fileName = file;
+
+
+        TimeParser timeParser = timeParserFactory.create();
         timeParser.configureTimeZone(timeZone);
-        return this;
-    }
+        timeParser.setFileName(file);
 
+        DataSetController controller = factory.create(params);
 
-
-    public void parse() throws DBCloseException, IOException, ParseException {
-        if (controller == null)
-            throw new IllegalStateException("DB connection not set");
-        if (timeParser == null)
-            throw  new IllegalStateException("Parsers are not set");
-
-
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))
+        try (BufferedReader br = new BufferedReader(new FileReader(file))
         ) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -85,7 +110,7 @@ public class ParseBuilder {
                 long key = count * min5;
 
                 DataSet ds = controller.get(key);
-                dataParser.parseLine(line, ds);
+                parser.parseLine(line, ds);
             }
         }
     }
