@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.naumen.sd40.log.parser.DBCloseException;
-import ru.naumen.sd40.log.parser.ParseBuilder;
+import ru.naumen.sd40.log.parser.ParseManager;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -18,7 +18,7 @@ import java.text.ParseException;
 public class ParseContoller {
 
     @Autowired
-    ParseBuilder builder;
+    ParseManager manager;
 
     @RequestMapping(path = "/parse", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
@@ -28,7 +28,7 @@ public class ParseContoller {
                                 @RequestParam(name = "timezone") String timeZone,
                                 @RequestParam(name = "need_logging") String needLogging) throws ParseException, DBCloseException, IOException {
 
-        builder.parse(mode, filePath, timeZone, db, needLogging.equals("yes"));
+        manager.parse(mode, filePath, timeZone, db, needLogging.equals("yes"));
 
         return new ResponseEntity<>("Parsing is done", HttpStatus.OK);
 

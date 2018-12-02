@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Set" %>
 <html>
 
 <head>
@@ -66,9 +67,9 @@
 
         <label>Parsing Mode:
             <select name="parse_mode">
-                <option value="sdng" selected>sdng</option>
-                <option value="gc">gc</option>
-                <option value="top">top</option>
+               <% for(String builder:(Set<String>)request.getAttribute("parseBuilders")) { %>
+                      <option><%=builder%></option>
+               <% } %>
             </select>
         </label>
         <br>
