@@ -16,6 +16,8 @@ import com.google.common.base.Joiner;
 import ru.naumen.perfhouse.influx.InfluxDAO;
 import ru.naumen.perfhouse.statdata.influx.InfluxDateHelper;
 import ru.naumen.perfhouse.statdata.influx.InfluxDateRange;
+import ru.naumen.sd40.log.parser.modes.common.DataType;
+import ru.naumen.sd40.log.parser.utils.GlobalConstants;
 
 /**
  * Component for getting data from influx
@@ -90,11 +92,11 @@ public class StatDataService
                 timePosition = (int)(step * (position - 1));
             }
 
-            Number dataAt = toCompress.getDataAt(Constants.TIME, timePosition);
-            result.setDataAt(Constants.TIME, dataAt, position);
+            Number dataAt = toCompress.getDataAt(GlobalConstants.TIME, timePosition);
+            result.setDataAt(GlobalConstants.TIME, dataAt, position);
 
             Set<String> dataNames = toCompress.getDataProperties();
-            dataNames.remove(Constants.TIME);
+            dataNames.remove(GlobalConstants.TIME);
             for (String name : dataNames)
             {
                 Number resultData = result.getDataAt(name, position);
@@ -125,12 +127,12 @@ public class StatDataService
     {
         InfluxDateRange utcRange = InfluxDateHelper.getInfluxRange(from, to);
         String template = "SELECT %s FROM %s WHERE %s ORDER BY %s DESC";
-        String time = Constants.TIME;
+        String time = GlobalConstants.TIME;
 
         String where = time + ">='" + utcRange.from() + "' and " + time + "<='" + utcRange.to() + "'";
 
-        String query = String.format(template, Joiner.on(',').join(type.getTypeProperties()),
-                Constants.MEASUREMENT_NAME, where, time);
+        String query = String.format(template, Joiner.on(',').join(type.getProps()),
+                GlobalConstants.MEASUREMENT_NAME, where, time);
 
         Series result = influxdao.executeQuery(client, query);
         if (result == null)
@@ -162,7 +164,7 @@ public class StatDataService
         for (List<Object> row : result.getValues())
         {
             long time = parser.parse((String)row.get(0)).getTime();
-            data.setDataAt(Constants.TIME, time, index);
+            data.setDataAt(GlobalConstants.TIME, time, index);
             for (int i = 1; i < row.size(); i++)
             {
                 Number value = (Number)row.get(i);
@@ -176,22 +178,22 @@ public class StatDataService
     private String prepareQuery(DataType type, int count)
     {
         String qTemp = "SELECT %s from %s ORDER BY %s DESC LIMIT %s";
-        return String.format(qTemp, Joiner.on(',').join(type.getTypeProperties()), Constants.MEASUREMENT_NAME,
-                Constants.TIME, count);
+        return String.format(qTemp, Joiner.on(',').join(type.getProps()), GlobalConstants.MEASUREMENT_NAME,
+                GlobalConstants.TIME, count);
     }
 
     private String prepareQueryDate(DataType dataType, int year, int month, int day)
     {
         String template = "SELECT %s from %s WHERE %s ORDER BY %s DESC";
 
-        return String.format(template, Joiner.on(',').join(dataType.getTypeProperties()), Constants.MEASUREMENT_NAME,
-                prepareWhere(year, month, day), Constants.TIME);
+        return String.format(template, Joiner.on(',').join(dataType.getProps()), GlobalConstants.MEASUREMENT_NAME,
+                prepareWhere(year, month, day), GlobalConstants.TIME);
     }
 
     private String prepareWhere(int year, int month, int day)
     {
         InfluxDateRange utcRange = InfluxDateHelper.getInfluxRange(year, month, day);
-        return Constants.TIME + ">='" + utcRange.from() + "'and " + Constants.TIME + "<='" + utcRange.to() + "'";
+        return GlobalConstants.TIME + ">='" + utcRange.from() + "'and " + GlobalConstants.TIME + "<='" + utcRange.to() + "'";
 
     }
 }

@@ -1,24 +1,5 @@
 package ru.naumen.perfhouse.influx;
 
-import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.AVARAGE_GC_TIME;
-import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.GCTIMES;
-import static ru.naumen.perfhouse.statdata.Constants.GarbageCollection.MAX_GC_TIME;
-import static ru.naumen.perfhouse.statdata.Constants.PerformedActions.*;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.COUNT;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.ERRORS;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.MAX;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.MEAN;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE50;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE95;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE99;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.PERCENTILE999;
-import static ru.naumen.perfhouse.statdata.Constants.ResponseTimes.STDDEV;
-import static ru.naumen.perfhouse.statdata.Constants.Top.AVG_CPU;
-import static ru.naumen.perfhouse.statdata.Constants.Top.AVG_LA;
-import static ru.naumen.perfhouse.statdata.Constants.Top.AVG_MEM;
-import static ru.naumen.perfhouse.statdata.Constants.Top.MAX_CPU;
-import static ru.naumen.perfhouse.statdata.Constants.Top.MAX_LA;
-import static ru.naumen.perfhouse.statdata.Constants.Top.MAX_MEM;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,11 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import ru.naumen.perfhouse.statdata.Constants;
-import ru.naumen.sd40.log.parser.datasetfactory.ActionDataSet;
-import ru.naumen.sd40.log.parser.datasetfactory.ErrorDataSet;
-import ru.naumen.sd40.log.parser.datasetfactory.GCDataSet;
-import ru.naumen.sd40.log.parser.datasetfactory.TopDataSet;
+import ru.naumen.sd40.log.parser.modes.common.DataSet;
+import ru.naumen.sd40.log.parser.utils.GlobalConstants;
 
 /**
  * Created by doki on 24.10.16.
@@ -107,44 +85,7 @@ public class InfluxDAO
         return BatchPoints.database(dbName).build();
     }
 
-    public void storeActionsFromLog(BatchPoints batch, String dbName, long date, ActionDataSet actionDataSet,
-                                    ErrorDataSet errorDataSet)
-    {
-        //@formatter:off
-        Builder builder = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
-                .addField(COUNT, actionDataSet.getCount())
-                .addField("min", actionDataSet.getMin())
-                .addField(MEAN, actionDataSet.getMean())
-                .addField(STDDEV, actionDataSet.getStddev())
-                .addField(PERCENTILE50, actionDataSet.getPercent50())
-                .addField(PERCENTILE95, actionDataSet.getPercent95())
-                .addField(PERCENTILE99, actionDataSet.getPercent99())
-                .addField(PERCENTILE999, actionDataSet.getPercent999())
-                .addField(MAX, actionDataSet.getMax())
-                .addField(ERRORS, errorDataSet.getErrorCount())
-                .addField(ADD_ACTIONS, actionDataSet.getAddObjectActions())
-                .addField(EDIT_ACTIONS, actionDataSet.getEditObjectsActions())
-                .addField(LIST_ACTIONS, actionDataSet.geListActions())
-                .addField(COMMENT_ACTIONS, actionDataSet.getCommentActions())
-                .addField(GET_FORM_ACTIONS, actionDataSet.getFormActions())
-                .addField(GET_DT_OBJECT_ACTIONS, actionDataSet.getDtObjectActions())
-                .addField(SEARCH_ACTIONS, actionDataSet.getSearchActions())
-                .addField(GET_CATALOGS_ACTION, actionDataSet.getGetCatalogsActions());
 
-
-        //@formatter:on
-
-        Point point = builder.build();
-
-        if (batch != null)
-        {
-            batch.getPoints().add(point);
-        }
-        else
-        {
-            influx.write(dbName, "autogen", point);
-        }
-    }
 
     public void storeFromJSon(BatchPoints batch, String dbName, JSONObject data)
     {
@@ -176,36 +117,14 @@ public class InfluxDAO
         }
     }
 
-    public void storeGc(BatchPoints batch, String dbName, long date, GCDataSet gcDataSet)
-    {
-        Point point = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
-                .addField(GCTIMES, gcDataSet.getGcTimes()).addField(AVARAGE_GC_TIME, gcDataSet.getCalculatedAvg())
-                .addField(MAX_GC_TIME, gcDataSet.getMaxGcTime()).build();
-
-        if (batch != null)
-        {
+    public  void storeData(BatchPoints batch, String dbName, long date, DataSet dataSet) {
+        Builder builder = Point.measurement(GlobalConstants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS);
+        builder.fields(dataSet.getValues());
+        Point point = builder.build();
+        if (batch != null) {
             batch.getPoints().add(point);
-        }
-        else
-        {
+        } else
             influx.write(dbName, "autogen", point);
-        }
-    }
-
-    public void storeTop(BatchPoints batch, String dbName, long date, TopDataSet data)
-    {
-        Point point = Point.measurement(Constants.MEASUREMENT_NAME).time(date, TimeUnit.MILLISECONDS)
-                .addField(AVG_LA, data.getAvgLa()).addField(AVG_CPU, data.getAvgCpuUsage())
-                .addField(AVG_MEM, data.getAvgMemUsage()).addField(MAX_LA, data.getMaxLa())
-                .addField(MAX_CPU, data.getMaxCpu()).addField(MAX_MEM, data.getMaxMem()).build();
-        if (batch != null)
-        {
-            batch.getPoints().add(point);
-        }
-        else
-        {
-            influx.write(dbName, "autogen", point);
-        }
     }
 
     public void writeBatch(BatchPoints batch)

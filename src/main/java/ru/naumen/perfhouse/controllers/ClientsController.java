@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import ru.naumen.perfhouse.influx.InfluxDAO;
-import ru.naumen.sd40.log.parser.parsebuilders.ParseBuilder;
+import ru.naumen.sd40.log.parser.modes.common.ParseBuilder;
 
 /**
  * Created by dkirpichenkov on 26.10.16.

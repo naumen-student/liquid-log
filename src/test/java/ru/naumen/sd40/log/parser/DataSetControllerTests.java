@@ -2,10 +2,11 @@ package ru.naumen.sd40.log.parser;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import ru.naumen.sd40.log.parser.datasetcontrollerfactory.DataSetControllerFactory;
-import ru.naumen.sd40.log.parser.datasetfactory.SdngDataFactory;
-import ru.naumen.sd40.log.parser.datasetfactory.SdngDataSet;
-import ru.naumen.sd40.log.parser.holders.SdngConnector;
+import ru.naumen.sd40.log.parser.modes.common.DBCloseException;
+import ru.naumen.sd40.log.parser.modes.common.DataSetController;
+import ru.naumen.sd40.log.parser.modes.sdng.data.SdngDataFactory;
+import ru.naumen.sd40.log.parser.modes.sdng.data.SdngDataSet;
+import ru.naumen.sd40.log.parser.modes.sdng.holder.SdngConnector;
 
 import java.security.InvalidParameterException;
 

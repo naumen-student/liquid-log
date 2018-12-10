@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.naumen.sd40.log.parser.DBCloseException;
-import ru.naumen.sd40.log.parser.ParseManager;
+import ru.naumen.sd40.log.parser.modes.common.DBCloseException;
+import ru.naumen.sd40.log.parser.modes.common.ParseManager;
 
 import java.io.IOException;
 import java.text.ParseException;
