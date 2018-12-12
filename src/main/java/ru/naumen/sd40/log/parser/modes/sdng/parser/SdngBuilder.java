@@ -2,13 +2,9 @@ package ru.naumen.sd40.log.parser.modes.sdng.parser;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.naumen.sd40.log.parser.modes.common.DataParser;
-import ru.naumen.sd40.log.parser.modes.common.DataSetController;
-import ru.naumen.sd40.log.parser.modes.common.Parameters;
-import ru.naumen.sd40.log.parser.modes.common.DataSetControllerFactory;
+import ru.naumen.sd40.log.parser.modes.common.*;
 import ru.naumen.sd40.log.parser.modes.sdng.data.SdngDataSet;
-import ru.naumen.sd40.log.parser.modes.common.ParseBuilder;
-import ru.naumen.sd40.log.parser.modes.common.TimeParser;
+import ru.naumen.sd40.log.parser.modes.sdng.data.SdngDataType;
 
 
 @Component("sdng")
@@ -39,5 +35,10 @@ public class SdngBuilder implements ParseBuilder {
     @Override
     public TimeParser getTimeParser() {
         return timeParserFactory.create();
+    }
+
+    @Override
+    public DataType[] getDataTypes() {
+        return SdngDataType.values();
     }
 }

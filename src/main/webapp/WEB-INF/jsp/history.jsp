@@ -1,10 +1,12 @@
-<%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@page import="java.util.Map" %>
-<%@page import="java.util.List" %>
-<%@page import="java.util.Date" %>
-<%@page import="org.influxdb.dto.QueryResult.Series" %>
-<%@page import="ru.naumen.sd40.log.parser.utils.GlobalConstants" %>
-<%@page import="ru.naumen.sd40.log.parser.modes.sdng.data.SdngDataType" %>
+<%@page import="ru.naumen.sd40.log.parser.utils.GlobalConstants"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.util.HashMap" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Set" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="org.influxdb.dto.QueryResult.Series" %>
+
 
 <html>
 
@@ -17,167 +19,91 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js"
             integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK"
             crossorigin="anonymous"></script>
-   <link rel="stylesheet" href="/css/style.css"/>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <style>
+        .col-xs-40 {
+        	width: 34%;
+        }
+        .col-xs-10 {
+        	width: 11%;
+        }
+    }
+    </style>
 </head>
 
 <body>
 
 <script src="http://code.highcharts.com/highcharts.js"></script>
-<%
-    Number p50[] = (Number[])request.getAttribute(SdngDataType.ResponseTimes.PERCENTILE50);
-    Number p95[] = (Number[])request.getAttribute(SdngDataType.ResponseTimes.PERCENTILE95);
-    Number p99[] = (Number[])request.getAttribute(SdngDataType.ResponseTimes.PERCENTILE99);
-    Number p999[] = (Number[])request.getAttribute(SdngDataType.ResponseTimes.PERCENTILE999);
-    Number p100[] = (Number[])request.getAttribute(SdngDataType.ResponseTimes.MAX);
-    Number count[]= (Number[])request.getAttribute(SdngDataType.ResponseTimes.COUNT);
-    Number errors[]= (Number[])request.getAttribute(SdngDataType.ResponseTimes.ERRORS);
-    Number mean[]= (Number[])request.getAttribute(SdngDataType.ResponseTimes.MEAN);
-    Number stddev[]= (Number[])request.getAttribute(SdngDataType.ResponseTimes.STDDEV);
-    Number times[] = (Number[])request.getAttribute(GlobalConstants.TIME);
-    
-  //Prepare links
-  	String path="";
-  	String custom = "";
-  	if(request.getAttribute("custom") == null){
-    	Object year = request.getAttribute("year");
-    	Object month = request.getAttribute("month");
-    	Object day = request.getAttribute("day");
-	    
-	    String countParam = (String)request.getParameter("count");
-	    
-    	String params = "";
-    	String datePath = "";
-    
-    	StringBuilder sb = new StringBuilder();
-    
-    
-    	if(countParam != null){
-        	params = sb.append("?count=").append(countParam).toString();
-    	}else{
-        	sb.append('/').append(year).append('/').append(month);
-        	if(!day.toString().equals("0")){
-            	sb.append('/').append(day);
-        	}
-        	datePath = sb.toString();
-    	}
-    	path = datePath + params;
-  	}
-  	else{
-  	    custom = "/custom";
-  	    Object from = request.getAttribute("from");
-  	  	Object to = request.getAttribute("to");
-  	  	Object maxResults = request.getAttribute("maxResults");
-  	  	
-  	  	StringBuilder sb = new StringBuilder();
-  	  	path = sb.append("?from=").append(from).append("&to=").append(to).append("&maxResults=").append(maxResults).toString();
-  	}
-%>
-
-<div class="container">
-	<br>
-    <h1>Performance data for "${client}"</h1>
-    <h3><a class="btn btn-success btn-lg" href="/">Client list</a></h3>
+<div style="margin-left: 20px">
+    <br>
+    <h1>Performance activity for <%=request.getAttribute("client")%></h1>
     <h4 id="date_range"></h4>
-    <p>
-        Feel free to hide/show specific percentile by clicking on chart's legend
-    </p>
-    <ul class="nav nav-pills">
-		<li class="nav-item"><a class="nav-link active">Responses</a></li>
-		<li class="nav-item"><a class="btn btn-outline-primary" href="/history/${client}<%=custom %>/actions<%=path%>">Performed actions</a></li>
-		<li class="nav-item"><a class="btn btn-outline-primary" href="/history/${client}<%=custom %>/gc<%=path%>">Garbage Collection</a></li>
-		<li class="nav-item"><a class="btn btn-outline-primary" href="/history/${client}<%=custom %>/top<%=path%>">Top data</a></li>
-	</ul>
 </div>
 
-<div class="container" id="response-chart-container" style="height:600px;">
-</div>
-
+<div id="chart-container" style="height: 600px"></div>
 
 <script>
-var p50 = [];
-var p95 = [];
-var p99 = [];
-var p999 = [];
-var p100 = [];
+<%
+    HashMap<String, Number[]> data = (HashMap<String, Number[]>)request.getAttribute("data");
+    Number times[] = data.remove(GlobalConstants.TIME);
+    Set<String> namesSet = data.keySet();
+    String names[] = namesSet.toArray(new String[namesSet.size()]);
+    List<Number[]> entries =  new ArrayList<>(data.values());
+%>
+
+var names = [];
 var times = [];
-var count = [];
+var entries = [];
+
+<% for(int i=0;i<names.length;i++) {%>
+        entries[<%=i%>] = [];
+        names[<%=i%>] = "<%=names[i]%>";
+<%}%>
+
 
 <% for(int i=0;i<times.length;i++) {%>
     times.push((<%=times[i]%>));
-    p50.push([new Date(<%= times[i] %>), <%= java.lang.Math.round(p50[i].doubleValue()) %>]);
-    p95.push([new Date(<%= times[i] %>), <%= java.lang.Math.round(p95[i].doubleValue()) %>]);
-    p99.push([new Date(<%= times[i] %>), <%= java.lang.Math.round(p99[i].doubleValue()) %>]);
-    p999.push([new Date(<%= times[i] %>), <%= java.lang.Math.round(p999[i].doubleValue()) %>]);
-	p100.push([new Date(<%= times[i] %>), <%= java.lang.Math.round(p100[i].doubleValue()) %>]);
-    count.push(<%= java.lang.Math.round(count[i].doubleValue()) %>)
+        <% for(int j = 0;j<names.length;j++) {%>
+    entries[<%=j%>].push([new Date(<%= times[i] %>), <%= java.lang.Math.round(entries.get(j)[i].intValue()) %>]);
+        <%}%>
 <% } %>
 
 
-document.getElementById('date_range').innerHTML += 'From: '+new Date(times[<%=times.length%>-1])+'<br/>To:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +new Date(times[0])
-
-if(localStorage.getItem('p50')==null){
-    localStorage.setItem('p50', 'false');
-}
-if(localStorage.getItem('p95')==null){
-    localStorage.setItem('p95', 'false');
-}
-if(localStorage.getItem('p99')==null){
-    localStorage.setItem('p99', 'true');
-}
-if(localStorage.getItem('p999')==null){
-    localStorage.setItem('p999', 'false');
-}
-if(localStorage.getItem('p100')==null){
-    localStorage.setItem('p100', 'false');
-}
-
-
-var p50visible = localStorage.getItem('p50')==='true';
-var p95visible = localStorage.getItem('p95')==='true';
-var p99visible = localStorage.getItem('p99')==='true';
-var p999visible = localStorage.getItem('p999')==='true';
-var p100visible = localStorage.getItem('p100')==='true';
-
-Highcharts.setOptions({
-	global: {
-		useUTC: false
-	}
-});
-
-var myChart = Highcharts.chart('response-chart-container', {
+var resultSeries = [];
+    for (var i = 0; i < names.length; i++) {
+        resultSeries.push({
+            name: names[i],
+            data: entries[i],
+            turboThreshold: 10000
+        })
+    }
+    
+Highcharts.chart('chart-container', {
         chart: {
-                zoomType: 'x,y'
-            },
-
-        title: {
-            text: 'Response times'
+            zoomType: 'x,y'
         },
-
+        title: {
+            text: '<%=request.getAttribute("client")%>'
+        },
         tooltip: {
             formatter: function() {
-                            var index = this.point.index;
-                            var date =  new Date(times[index]);
-                            var samples = count[index];
-                            return Highcharts.dateFormat('%a %d %b %H:%M:%S', date)
-                            + '<br/> <b>'+this.series.name+'</b> '+ this.y + ' ms <br/>'+
-                            'Count:'+samples;
-                        }
+                var index = this.point.index;
+                var date =  new Date(times[index]);
+                return Highcharts.dateFormat('%a %d %b %H:%M:%S', date)
+                    + '<br/> <b>'+this.series.name+'</b> - '+ this.y + ' times<br/>'
+            }
         },
-
         xAxis: {
             labels:{
                 formatter:function(obj){
-//                        var index = this.point.index;
-//                        var date =  new Date(times[index]);
-                        return Highcharts.dateFormat('%a %d %b %H:%M:%S', new Date(times[this.value]));
-                    }
-                },
-                reversed: true
+                    return Highcharts.dateFormat('%a %d %b %H:%M:%S', new Date(times[this.value]));
+                }
+            },
+            reversed: true
         },
-
         yAxis: {
             title: {
-                text: 'Response time'
+                text: '<%=request.getAttribute("dataTypeName")%>'
             },
             plotLines: [{
                 value: 0,
@@ -189,112 +115,41 @@ var myChart = Highcharts.chart('response-chart-container', {
             line: {
                 marker: {
                     enabled: false
-                },
-                events: {
-                    legendItemClick: function(event) {
-                        var series = this.yAxis.series;
-                        seriesLen = series.length;
-
-                        if(event.target.index==0){
-                            localStorage.setItem('p50', !series[0].visible);
-                        }
-                        if(event.target.index==1){
-                            localStorage.setItem('p95', !series[1].visible);
-                        }
-                        if(event.target.index==2){
-                            localStorage.setItem('p99', !series[2].visible);
-                        }
-                        if(event.target.index==3){
-                            localStorage.setItem('p999', !series[3].visible);
-                        }
-                        if(event.target.index==4){
-                            localStorage.setItem('p100', !series[4].visible);
-                        }
-                    }
                 }
             }
         },
-        series: [{
-            name: '50%',
-            data: p50,
-            visible: p50visible,
-            turboThreshold: 10000
-        }, {
-            name: '95%',
-            data: p95,
-            visible: p95visible,
-            turboThreshold: 10000
-        }, {
-            name: '99%',
-            data: p99,
-            visible: p99visible,
-            turboThreshold: 10000
-        }, {
-            name: '99.9%',
-            data: p999,
-            visible: p999visible,
-            turboThreshold: 10000
-        }, {
-            name: 'max%',
-            data: p100,
-            visible: p100visible,
-            turboThreshold: 10000
-        }]
-});
+        series: resultSeries
+    });
+    document.getElementById('date_range').innerHTML += 'From: '+new Date(times[<%=times.length%>-1])+'<br/>To:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +new Date(times[0])
+
 </script>
 
-<div class="container scroll-container" >
+
+<div class="container scroll-container">
     <table class="table table-fixed header-fixed">
         <thead class="thead-inverse">
-            <th class="col-xs-3">Time</th>
-            <th class="col-xs-1">Count</th>
-            <th class="col-xs-1">Errors</th>
-            <th class="col-xs-1">Mean</th>
-            <th class="col-xs-1">Stddev</th>
-            <th class="col-xs-1">50%</th>
-            <th class="col-xs-1">95%</th>
-            <th class="col-xs-1">99%</th>
-            <th class="col-xs-1">99.9%</th>
-            <th class="col-xs-1">Max</th>
+            <th class="col-xs-2">Time</th>
+            <%for (int i = 0; i < names.length; i++) {%>
+            <th class="col-xs-1"><%=names[i]%></th>
+            <%}%>
         </thead>
         <tbody>
-            <% for(int i=0;i<times.length;i++) {%>
-                <tr class="row">
-                    <td class="col-xs-3" style="text-align:center;">
-                       <%= new java.util.Date(times[i].longValue()).toString() %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(count[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(errors[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(mean[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(stddev[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(p50[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(p95[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(p99[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(p999[i].doubleValue()) %>
-                    </td>
-                    <td class="col-xs-1">
-                        <%= java.lang.Math.round(p100[i].doubleValue()) %>
-                    </td>
-                </tr>
-            <% } %>
+        <% for(int i=0;i<times.length;i++) {%>
+            <tr class="row">
+                <td class="col-xs-2" style="text-align:center;">
+                    <%= new java.util.Date(times[i].longValue()).toString() %>
+                </td>
+                <% for(int j=0;j<names.length;j++) {%>
+                <td class="col-xs-1">
+                    <%= java.lang.Math.round(entries.get(j)[i].intValue()) %>
+                </td>
+                <%}%>
+            </tr>
+        <%}%>
         </tbody>
     </table>
 </div>
+
 </body>
 
 </html>

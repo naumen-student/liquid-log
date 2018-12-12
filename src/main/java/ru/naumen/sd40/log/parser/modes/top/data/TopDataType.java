@@ -7,7 +7,7 @@ import ru.naumen.sd40.log.parser.utils.GlobalConstants;
 import java.util.List;
 
 public enum TopDataType implements DataType {
-    TOP_DATA_TYPE(Top.getProps());
+    TOP(Top.getProps());
 
     private List<String> props;
 

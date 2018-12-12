@@ -1,9 +1,5 @@
 package ru.naumen.perfhouse.controllers;
 
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -11,158 +7,135 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
 import ru.naumen.perfhouse.statdata.StatData;
 import ru.naumen.perfhouse.statdata.StatDataService;
 import ru.naumen.sd40.log.parser.modes.common.DataType;
-import ru.naumen.sd40.log.parser.modes.gc.data.GcDataType;
-import ru.naumen.sd40.log.parser.modes.sdng.data.SdngDataType;
-import ru.naumen.sd40.log.parser.modes.top.data.TopDataType;
+import ru.naumen.sd40.log.parser.modes.common.ParseBuilder;
 
-/**
- * Created by doki on 23.10.16.
- */
+import javax.inject.Inject;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
-public class HistoryController
-{
+public class HistoryController {
 
     @Autowired
-    StatDataService service;
+    private StatDataService service;
+    private Map<String, ParseBuilder> parseBuilders;
+    private HashMap<String, DataType> dataTypeHashMap = new HashMap<>();
 
     private static final String NO_HISTORY_VIEW = "no_history";
-    private static final String HISTORY_VIEW = "history";
-    private static final String ACTIONS_VIEW = "history_actions";
-    private static final String GC_VIEW = "gc_history";
-    private static final String CPU_VIEW = "history_top";
+    private static final String DATA_TYPES = "mode_selector";
+    private static final String GRAPHS = "history";
 
-    @RequestMapping(path = "/history/{client}/{year}/{month}/{day}")
-    public ModelAndView indexByDay(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month,
-            @PathVariable(name = "day", required = false) int day) throws ParseException
-    {
-        return getDataAndViewByDate(client, SdngDataType.RESPONSE, year, month, day, HISTORY_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/actions/{year}/{month}/{day}")
-    public ModelAndView actionsByDay(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month,
-            @PathVariable(name = "day", required = false) int day) throws ParseException
-    {
-        return getDataAndViewByDate(client, SdngDataType.ACTIONS, year, month, day, ACTIONS_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/gc/{year}/{month}/{day}")
-    public ModelAndView gcByDay(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month,
-            @PathVariable(name = "day", required = false) int day) throws ParseException
-    {
-        return getDataAndViewByDate(client, GcDataType.GC_DATA_TYPE, year, month, day, GC_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/top/{year}/{month}/{day}")
-    public ModelAndView topByDay(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month,
-            @PathVariable(name = "day", required = false) int day) throws ParseException
-    {
-        return getDataAndViewByDate(client, TopDataType.TOP_DATA_TYPE, year, month, day, CPU_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/{year}/{month}")
-    public ModelAndView indexByMonth(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month) throws ParseException
-    {
-        return getDataAndViewByDate(client, SdngDataType.RESPONSE, year, month, 0, HISTORY_VIEW, true);
-    }
-
-    @RequestMapping(path = "/history/{client}/actions/{year}/{month}")
-    public ModelAndView actionsByMonth(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month) throws ParseException
-    {
-        return getDataAndViewByDate(client, SdngDataType.ACTIONS, year, month, 0, ACTIONS_VIEW, true);
-    }
-
-    @RequestMapping(path = "/history/{client}/gc/{year}/{month}")
-    public ModelAndView gcByMonth(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month) throws ParseException
-    {
-        return getDataAndViewByDate(client, GcDataType.GC_DATA_TYPE, year, month, 0, GC_VIEW, true);
-    }
-
-    @RequestMapping(path = "/history/{client}/top/{year}/{month}")
-    public ModelAndView topByMonth(@PathVariable("client") String client,
-            @PathVariable(name = "year", required = false) int year,
-            @PathVariable(name = "month", required = false) int month) throws ParseException
-    {
-        return getDataAndViewByDate(client, TopDataType.TOP_DATA_TYPE, year, month, 0, CPU_VIEW, true);
-    }
-
-    @RequestMapping(path = "/history/{client}")
-    public ModelAndView indexLast864(@PathVariable("client") String client,
-            @RequestParam(name = "count", defaultValue = "864") int count) throws ParseException
-    {
-        ru.naumen.perfhouse.statdata.StatData d = service.getData(client, SdngDataType.RESPONSE, count);
-
-        if (d == null)
-        {
-            return new ModelAndView(NO_HISTORY_VIEW);
+    @Inject
+    public HistoryController(Map<String, ParseBuilder> parseBuilders) {
+        this.parseBuilders = parseBuilders;
+        for (ParseBuilder builder: this.parseBuilders.values()) {
+            DataType[] dataTypes = builder.getDataTypes();
+            for (DataType dataType : dataTypes)
+                dataTypeHashMap.put(dataType.toString().toLowerCase(), dataType);
         }
 
-        Map<String, Object> model = new HashMap<>(d.asModel());
-        model.put("client", client);
-
-        return new ModelAndView("history", model, HttpStatus.OK);
     }
 
-    @RequestMapping(path = "/history/{client}/gc")
-    public ModelAndView gcLast864(@PathVariable("client") String client,
-            @RequestParam(name = "count", defaultValue = "864") int count) throws ParseException
+    @RequestMapping(path = "/history/{client}/{dataType}/{year}/{month}/{day}")
+    public ModelAndView byDay(@PathVariable("client") String client, @PathVariable("dataType") String dataType,
+                                     @PathVariable(name = "year", required = false) int year,
+                                     @PathVariable(name = "month", required = false) int month,
+                                     @PathVariable(name = "day", required = false) int day) throws ParseException
     {
-        return getDataAndView(client, GcDataType.GC_DATA_TYPE, count, GC_VIEW);
+        return getDataAndViewByDate(client, dataTypeHashMap.get(dataType), year, month, day, GRAPHS, false);
+    }
+
+    @RequestMapping(path = "/history/{client}/{dataType}/{year}/{month}")
+    public ModelAndView byMonth(@PathVariable("client") String client, @PathVariable("dataType") String dataType,
+                                       @PathVariable(name = "year", required = false) int year,
+                                       @PathVariable(name = "month", required = false) int month) throws ParseException
+    {
+        return getDataAndViewByDate(client, dataTypeHashMap.get(dataType), year, month, 0, GRAPHS, true);
+    }
+
+    @RequestMapping(path = "/history/{client}/{dataType}")
+    public ModelAndView last864(@PathVariable("client") String client, @PathVariable("dataType") String dataType,
+                                  @RequestParam(name = "count", defaultValue = "864") int count) throws ParseException
+    {
+        return getDataAndView(client, dataTypeHashMap.get(dataType), count, GRAPHS);
 
     }
+
+    @RequestMapping(path = "/data_types/{client}")
+    public ModelAndView custom_init(@PathVariable("client") String client,
+                                    @RequestParam(value = "year", required = false) Integer year,
+                                    @RequestParam(value = "month", required = false) Integer month,
+                                    @RequestParam(value = "day", required = false) Integer day,
+                                    @RequestParam(value = "from", required = false) String from,
+                                    @RequestParam(value = "to", required = false) String to,
+                                    @RequestParam(value = "maxResults", defaultValue = "1000") int count) {
+        Map<String, Object> model = new HashMap<>();
+        model.put("client", client);
+        if (from != null && to != null) {
+            model.put("custom", true);
+            model.put("from", from);
+            model.put("to", to);
+            model.put("maxResults", count);
+        }
+        else {
+            model.put("year", year);
+            model.put("month", month);
+            model.put("day", day);
+        }
+
+        model.put("dataTypes", dataTypeHashMap.keySet());
+        return new ModelAndView(DATA_TYPES, model, HttpStatus.OK);
+
+    }
+
+    @RequestMapping(path = "/history/{client}/custom/{dataType}")
+    public ModelAndView custom(@PathVariable("client") String client, @RequestParam("dataType") String dataType,
+                               @RequestParam("from") String from,
+                               @RequestParam("to") String to,
+                               @RequestParam("maxResults") int maxResults) throws ParseException
+    {
+        return getDataAndViewCustom(client, dataTypeHashMap.get(dataType), from, to, maxResults, GRAPHS);
+    }
+
 
     private ModelAndView getDataAndView(String client, DataType dataType, int count, String viewName)
             throws ParseException
     {
-        ru.naumen.perfhouse.statdata.StatData data = service.getData(client, dataType, count);
+        StatData data = service.getData(client, dataType, count);
         if (data == null)
         {
             return new ModelAndView(NO_HISTORY_VIEW);
         }
-        Map<String, Object> model = new HashMap<>(data.asModel());
+        Map<String, Object> model = new HashMap<>();
+        model.put("data", data.asModel());
         model.put("client", client);
-
+        model.put("dataTypes", dataTypeHashMap.keySet());
+        model.put("dataTypeName", dataType);
         return new ModelAndView(viewName, model, HttpStatus.OK);
     }
 
     private ModelAndView getDataAndViewByDate(String client, DataType type, int year, int month, int day,
-            String viewName) throws ParseException
+                                              String viewName, boolean compress) throws ParseException
     {
-        return getDataAndViewByDate(client, type, year, month, day, viewName, false);
-    }
+        StatData data = service.getDataDate(client, type, year, month, day);
 
-    private ModelAndView getDataAndViewByDate(String client, DataType type, int year, int month, int day,
-            String viewName, boolean compress) throws ParseException
-    {
-        ru.naumen.perfhouse.statdata.StatData dataDate = service.getDataDate(client, type, year, month, day);
-        if (dataDate == null)
+        if (data == null)
         {
             return new ModelAndView(NO_HISTORY_VIEW);
         }
 
-        dataDate = compress ? service.compress(dataDate, 3 * 60 * 24 / 5) : dataDate;
-        Map<String, Object> model = new HashMap<>(dataDate.asModel());
+        data = compress ? service.compress(data, 3 * 60 * 24 / 5) : data;
+        Map<String, Object> model = new HashMap<>();
+        model.put("data", data.asModel());
         model.put("client", client);
         model.put("year", year);
         model.put("month", month);
         model.put("day", day);
+        model.put("dataTypes", dataTypeHashMap.keySet());
         return new ModelAndView(viewName, model, HttpStatus.OK);
     }
 
@@ -175,55 +148,17 @@ public class HistoryController
             return new ModelAndView(NO_HISTORY_VIEW);
         }
         data = service.compress(data, maxResults);
-        Map<String, Object> model = new HashMap<>(data.asModel());
+        Map<String, Object> model = new HashMap<>();
+        model.put("data", data.asModel());
         model.put("client", client);
         model.put("custom", true);
         model.put("from", from);
         model.put("to", to);
         model.put("maxResults", maxResults);
+        model.put("dataTypes", dataTypeHashMap.keySet());
+        model.put("dataTypeName", dataType);
         return new ModelAndView(viewName, model, HttpStatus.OK);
     }
 
-    @RequestMapping(path = "/history/{client}/actions")
-    public ModelAndView actionsLast864(@PathVariable("client") String client,
-            @RequestParam(name = "count", defaultValue = "864") int count) throws ParseException
-    {
-        return getDataAndView(client, SdngDataType.ACTIONS, count, ACTIONS_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/top")
-    public ModelAndView topLast864(@PathVariable("client") String client,
-            @RequestParam(name = "count", defaultValue = "864") int count) throws ParseException
-    {
-        return getDataAndView(client, TopDataType.TOP_DATA_TYPE, count, CPU_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/custom")
-    public ModelAndView customIndex(@PathVariable("client") String client, @RequestParam("from") String from,
-            @RequestParam("to") String to, @RequestParam("maxResults") int maxResults) throws ParseException
-    {
-        return getDataAndViewCustom(client, SdngDataType.RESPONSE, from, to, maxResults, HISTORY_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/custom/actions")
-    public ModelAndView customActions(@PathVariable("client") String client, @RequestParam("from") String from,
-            @RequestParam("to") String to, @RequestParam("maxResults") int count) throws ParseException
-    {
-        return getDataAndViewCustom(client, SdngDataType.ACTIONS, from, to, count, ACTIONS_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/custom/gc")
-    public ModelAndView customGc(@PathVariable("client") String client, @RequestParam("from") String from,
-            @RequestParam("to") String to, @RequestParam("maxResults") int count) throws ParseException
-    {
-        return getDataAndViewCustom(client, GcDataType.GC_DATA_TYPE, from, to, count, GC_VIEW);
-    }
-
-    @RequestMapping(path = "/history/{client}/custom/top")
-    public ModelAndView customTop(@PathVariable("client") String client, @RequestParam("from") String from,
-            @RequestParam("to") String to, @RequestParam("maxResults") int count) throws ParseException
-    {
-        return getDataAndViewCustom(client, TopDataType.TOP_DATA_TYPE, from, to, count, CPU_VIEW);
-    }
 
 }

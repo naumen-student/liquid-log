@@ -67,7 +67,7 @@ public enum  SdngDataType implements DataType {
         static List<String> getProps()
         {
             return Lists.newArrayList(GlobalConstants.TIME, COUNT, ERRORS, MEAN, STDDEV, PERCENTILE50, PERCENTILE95, PERCENTILE99,
-                    PERCENTILE999, MAX);
+                    PERCENTILE999, MAX, MIN);
         }
     }
 

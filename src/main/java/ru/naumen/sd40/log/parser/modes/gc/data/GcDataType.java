@@ -8,7 +8,7 @@ import java.util.List;
 
 public enum GcDataType implements DataType {
 
-    GC_DATA_TYPE(GarbageCollection.getProps());
+    GARBAGE_COLLECTION(GarbageCollection.getProps());
 
     private List<String> props;
 
